@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethan's Clash Royale Deck Counter Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial Black', 'Arial Bold', sans-serif;
+            background: linear-gradient(180deg, #1a1f3a 0%, #2d1b4e 50%, #1a1f3a 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #1e2442 0%, #2a1f4a 100%);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 60px rgba(255, 165, 0, 0.2);
+            border: 3px solid #ffa500;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffa500;
+            font-size: 36px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(255, 165, 0, 0.5);
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .instructions {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            border: 2px solid #ffa500;
+            font-weight: bold;
+        }
+
+        .section-title {
+            font-size: 24px;
+            color: #ffa500;
+            margin: 20px 0 10px 0;
+            font-weight: 900;
+            border-bottom: 3px solid #ffa500;
+            padding-bottom: 5px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Opponent Deck */
+        .opponent-deck {
+            background: linear-gradient(135deg, #c41e3a 0%, #8b1a2e 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 3px solid #ff4757;
+            box-shadow: 0 6px 20px rgba(196, 30, 58, 0.4);
+        }
+
+        .opponent-deck .section-title {
+            color: #ffeb3b;
+            border-bottom-color: #ffeb3b;
+        }
+
+        .deck-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid #d4d4d4;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            border-color: #ffa500;
+        }
+
+        .card img {
+            width: 100%;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .card-name {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #1a1f3a;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+
+        /* Your Deck */
+        .your-deck {
+            background: linear-gradient(135deg, #4169e1 0%, #1e3a8a 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            min-height: 200px;
+            border: 3px solid #5b8def;
+            box-shadow: 0 6px 20px rgba(65, 105, 225, 0.4);
+        }
+
+        .your-deck .section-title {
+            color: #ffeb3b;
+            border-bottom-color: #ffeb3b;
+        }
+
+        .card.selected {
+            border: 3px solid #ffa500;
+            background: linear-gradient(135deg, #ffe5b4 0%, #ffd700 30%);
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.6);
+        }
+
+        .card.opponent {
+            cursor: default;
+            opacity: 0.95;
+        }
+
+        .card.opponent:hover {
+            transform: none;
+        }
+
+        /* Card Selection Area */
+        .card-selection {
+            background: linear-gradient(135deg, #2a2d4a 0%, #1e2238 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #4a5568;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .card-selection .section-title {
+            color: #a0aec0;
+        }
+
+        /* Sorting controls */
+        .sort-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .sort-button {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            color: #a0aec0;
+            border: 2px solid #4a5568;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sort-button:hover {
+            background: linear-gradient(135deg, #5a6578 0%, #3d4758 100%);
+            border-color: #ffa500;
+        }
+
+        .sort-button.active {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            border-color: #ffa500;
+            box-shadow: 0 0 15px rgba(255, 165, 0, 0.4);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 10px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .card-grid .card {
+            padding: 8px;
+        }
+
+        .card-grid .card img {
+            height: 100px;
+        }
+
+        .card-grid .card-name {
+            font-size: 10px;
+        }
+
+        /* Buttons */
+        .button-container {
+            text-align: center;
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            border: 3px solid #ffa500;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 900;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4), 0 0 20px rgba(255, 165, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 30px rgba(255, 165, 0, 0.5);
+            background: linear-gradient(135deg, #ff8c42 0%, #ffa500 100%);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            border-color: #4a5568;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.6;
+            box-shadow: none;
+        }
+
+        .clear-button {
+            background: linear-gradient(135deg, #c41e3a 0%, #8b1a2e 100%);
+            border-color: #ff4757;
+        }
+
+        .clear-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e02444 0%, #a0202e 100%);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 30px rgba(255, 71, 87, 0.5);
+        }
+
+        /* Result */
+        .result {
+            background: linear-gradient(135deg, #2a2d4a 0%, #1e2238 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffa500;
+            display: none;
+            border: 3px solid #ff4757;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .counter-count {
+            font-size: 56px;
+            color: #ff4757;
+            margin: 10px 0;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(255, 71, 87, 0.6);
+        }
+
+        .success {
+            background: linear-gradient(135deg, #1e7e34 0%, #28a745 100%);
+            color: #ffeb3b;
+            border-color: #4caf50;
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.5), 0 0 40px rgba(76, 175, 80, 0.4);
+        }
+
+        .success .counter-count {
+            color: #ffd700;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+
+        /* Deck counter at top */
+        .deck-counter {
+            text-align: center;
+            font-size: 18px;
+            color: #a0aec0;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .deck-counter.full {
+            color: #ffd700;
+            font-weight: 900;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Header Images */
+        .header-banner {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 20px auto;
+            display: block;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .clash-logo {
+            width: 200px;
+            height: auto;
+            filter: drop-shadow(0 4px 15px rgba(255, 165, 0, 0.6));
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Clash Royale Banner -->
+        <img src="./assets/clash_banner.webp" alt="Clash Royale" class="header-banner">
+
+        <!-- Logo and Title -->
+        <div class="logo-container">
+            <img src="./assets/clash_logo.webp" alt="Clash Royale Logo" class="clash-logo">
+        </div>
+
+        <h1>⚔️ Deck Counter Challenge ⚔️</h1>
+
+        <div class="instructions">
+            <strong>Your Mission:</strong> Build the perfect 8-card deck to counter your opponent's deck!<br>
+            Click on cards below to select them for your deck. When you have 8 cards, check if you've found all the right counters!
+        </div>
+
+        <!-- Opponent's Deck -->
+        <div class="opponent-deck">
+            <div class="section-title">🔴 Opponent's Deck</div>
+            <div class="deck-cards" id="opponentDeck"></div>
+        </div>
+
+        <!-- Your Deck -->
+        <div class="your-deck">
+            <div class="section-title">🔵 Your Counter Deck</div>
+            <div class="deck-counter" id="deckCounter">Selected: 0/8 cards</div>
+            <div class="deck-cards" id="yourDeck">
+                <div style="grid-column: 1/-1; color: white; text-align: center; padding: 20px;">
+                    Select 8 cards from below to build your counter deck
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="button-container">
+            <button id="checkButton" disabled>Check Deck (Select 8 Cards)</button>
+            <button id="clearButton" class="clear-button">Clear All</button>
+        </div>
+
+        <!-- Result -->
+        <div class="result" id="result"></div>
+
+        <!-- Card Selection Area -->
+        <div class="card-selection">
+            <div class="section-title">📋 Available Cards - Click to Select</div>
+
+            <!-- Sorting Controls -->
+            <div class="sort-controls">
+                <button class="sort-button" data-sort="alphabetical">Alphabetical <span class="sort-arrow">↑</span></button>
+                <button class="sort-button" data-sort="elixir">Elixir Cost <span class="sort-arrow">↑</span></button>
+                <button class="sort-button active" data-sort="rarity">Rarity <span class="sort-arrow">↓</span></button>
+            </div>
+
+            <div class="card-grid" id="cardGrid"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // Opponent's deck (8 cards) - custom order
+        // Champion > Legendary > Epic > Rare > Common
+        const opponentDeck = [
+            'skeleton-king',    // Champion
+            'the-log',          // Legendary
+            'rage',             // Epic
+            'goblin-hut',       // Rare
+            'inferno-tower',    // Rare
+            'royal-giant',      // Common
+            'goblin-gang',      // Common
+            'royal-recruits'    // Common
+        ];
+
+        // Correct counter cards
+        const correctCounters = [
+            'goblin-cage',
+            'electro-wizard',
+            'three-musketeers',
+            'barbarian-barrel',
+            'hog-rider',
+            'elixir-collector',
+            'mighty-miner',
+            'executioner'
+        ];
+
+        // Progressive clues based on number correct
+        const clues = [
+            "Counters always have more letters in their names than the originals",
+            "Buildings countered by actual counters",
+            "Spells countered by rhyming words",
+            "Heroes countered by cards that start later in the alphabet",
+            "Goblins countered by cards with x",
+            "Royal cards countered by alliteration",
+            "Alliterative cards are countered by towers",
+            "Giants are only countered by heroes"
+        ];
+
+        // All available cards (filtering out evolutions, super, and special variants for cleaner selection)
+        const allCards = [
+            'archer-queen', 'archers', 'arrows', 'baby-dragon', 'balloon', 'bandit',
+            'barbarian-barrel', 'barbarian-hut', 'barbarians', 'bats', 'battle-healer',
+            'battle-ram', 'bomb-tower', 'bomber', 'bowler', 'cannon-cart', 'cannon',
+            'clone', 'dark-prince', 'dart-goblin', 'earthquake', 'electro-dragon',
+            'electro-giant', 'electro-spirit', 'electro-wizard', 'elite-barbarians',
+            'elixir-collector', 'executioner', 'fire-spirit', 'fireball', 'firecracker',
+            'fisherman', 'flying-machine', 'freeze', 'furnace', 'giant-skeleton',
+            'giant-snowball', 'giant', 'goblin-barrel', 'goblin-cage', 'goblin-drill',
+            'goblin-gang', 'goblin-giant', 'goblin-hut', 'goblins', 'golden-knight',
+            'golem', 'graveyard', 'guards', 'heal-spirit', 'hog-rider', 'hunter',
+            'ice-golem', 'ice-spirit', 'ice-wizard', 'inferno-dragon', 'inferno-tower',
+            'knight', 'lava-hound', 'lightning', 'little-prince', 'lumberjack',
+            'magic-archer', 'mega-knight', 'mega-minion', 'mighty-miner', 'miner',
+            'mini-pekka', 'minion-horde', 'minions', 'mirror', 'monk', 'mortar',
+            'mother-witch', 'musketeer', 'night-witch', 'pekka', 'phoenix', 'poison',
+            'prince', 'princess', 'rage', 'ram-rider', 'rascals', 'rocket',
+            'royal-delivery', 'royal-ghost', 'royal-giant', 'royal-hogs', 'royal-recruits',
+            'skeleton-army', 'skeleton-barrel', 'skeleton-dragons', 'skeleton-king',
+            'skeletons', 'sparky', 'spear-goblins', 'tesla', 'the-log', 'three-musketeers',
+            'tombstone', 'tornado', 'valkyrie', 'wall-breakers', 'witch', 'wizard',
+            'x-bow', 'zap', 'zappies'
+        ];
+
+        // Card metadata (elixir cost and rarity)
+        const cardData = {
+            'archer-queen': {elixir: 5, rarity: 5}, 'archers': {elixir: 3, rarity: 1}, 'arrows': {elixir: 3, rarity: 1},
+            'baby-dragon': {elixir: 4, rarity: 3}, 'balloon': {elixir: 5, rarity: 3}, 'bandit': {elixir: 3, rarity: 4},
+            'barbarian-barrel': {elixir: 2, rarity: 3}, 'barbarian-hut': {elixir: 7, rarity: 2}, 'barbarians': {elixir: 5, rarity: 1},
+            'bats': {elixir: 2, rarity: 1}, 'battle-healer': {elixir: 4, rarity: 2}, 'battle-ram': {elixir: 4, rarity: 2},
+            'bomb-tower': {elixir: 4, rarity: 2}, 'bomber': {elixir: 2, rarity: 1}, 'bowler': {elixir: 5, rarity: 3},
+            'cannon': {elixir: 3, rarity: 1}, 'cannon-cart': {elixir: 5, rarity: 3}, 'clone': {elixir: 3, rarity: 3},
+            'dark-prince': {elixir: 4, rarity: 3}, 'dart-goblin': {elixir: 3, rarity: 2}, 'earthquake': {elixir: 3, rarity: 2},
+            'electro-dragon': {elixir: 5, rarity: 3}, 'electro-giant': {elixir: 8, rarity: 3}, 'electro-spirit': {elixir: 1, rarity: 1},
+            'electro-wizard': {elixir: 4, rarity: 4}, 'elite-barbarians': {elixir: 6, rarity: 1}, 'elixir-collector': {elixir: 6, rarity: 2},
+            'executioner': {elixir: 5, rarity: 3}, 'fire-spirit': {elixir: 1, rarity: 1}, 'fireball': {elixir: 4, rarity: 2},
+            'firecracker': {elixir: 3, rarity: 1}, 'fisherman': {elixir: 3, rarity: 4}, 'flying-machine': {elixir: 4, rarity: 2},
+            'freeze': {elixir: 4, rarity: 3}, 'furnace': {elixir: 4, rarity: 2}, 'giant': {elixir: 5, rarity: 2},
+            'giant-skeleton': {elixir: 6, rarity: 3}, 'giant-snowball': {elixir: 2, rarity: 1}, 'goblin-barrel': {elixir: 3, rarity: 3},
+            'goblin-cage': {elixir: 4, rarity: 2}, 'goblin-drill': {elixir: 4, rarity: 3}, 'goblin-gang': {elixir: 3, rarity: 1},
+            'goblin-giant': {elixir: 6, rarity: 3}, 'goblin-hut': {elixir: 5, rarity: 2}, 'goblins': {elixir: 2, rarity: 1},
+            'golden-knight': {elixir: 4, rarity: 5}, 'golem': {elixir: 8, rarity: 3}, 'graveyard': {elixir: 5, rarity: 4},
+            'guards': {elixir: 3, rarity: 3}, 'heal-spirit': {elixir: 1, rarity: 2}, 'hog-rider': {elixir: 4, rarity: 2},
+            'hunter': {elixir: 4, rarity: 3}, 'ice-golem': {elixir: 2, rarity: 2}, 'ice-spirit': {elixir: 1, rarity: 1},
+            'ice-wizard': {elixir: 3, rarity: 4}, 'inferno-dragon': {elixir: 4, rarity: 4}, 'inferno-tower': {elixir: 5, rarity: 2},
+            'knight': {elixir: 3, rarity: 1}, 'lava-hound': {elixir: 7, rarity: 4}, 'lightning': {elixir: 6, rarity: 3},
+            'little-prince': {elixir: 3, rarity: 5}, 'lumberjack': {elixir: 4, rarity: 4}, 'magic-archer': {elixir: 4, rarity: 4},
+            'mega-knight': {elixir: 7, rarity: 4}, 'mega-minion': {elixir: 3, rarity: 2}, 'mighty-miner': {elixir: 4, rarity: 5},
+            'miner': {elixir: 3, rarity: 4}, 'mini-pekka': {elixir: 4, rarity: 2}, 'minion-horde': {elixir: 5, rarity: 1},
+            'minions': {elixir: 3, rarity: 1}, 'mirror': {elixir: 1, rarity: 3}, 'monk': {elixir: 5, rarity: 5},
+            'mortar': {elixir: 4, rarity: 1}, 'mother-witch': {elixir: 4, rarity: 4}, 'musketeer': {elixir: 4, rarity: 2},
+            'night-witch': {elixir: 4, rarity: 4}, 'pekka': {elixir: 7, rarity: 3}, 'phoenix': {elixir: 4, rarity: 4},
+            'poison': {elixir: 4, rarity: 3}, 'prince': {elixir: 5, rarity: 3}, 'princess': {elixir: 3, rarity: 4},
+            'rage': {elixir: 2, rarity: 3}, 'ram-rider': {elixir: 5, rarity: 4}, 'rascals': {elixir: 5, rarity: 1},
+            'rocket': {elixir: 6, rarity: 2}, 'royal-delivery': {elixir: 3, rarity: 1}, 'royal-ghost': {elixir: 3, rarity: 4},
+            'royal-giant': {elixir: 6, rarity: 1}, 'royal-hogs': {elixir: 5, rarity: 2}, 'royal-recruits': {elixir: 7, rarity: 1},
+            'skeleton-army': {elixir: 3, rarity: 3}, 'skeleton-barrel': {elixir: 3, rarity: 1}, 'skeleton-dragons': {elixir: 4, rarity: 1},
+            'skeleton-king': {elixir: 4, rarity: 5}, 'skeletons': {elixir: 1, rarity: 1}, 'sparky': {elixir: 6, rarity: 4},
+            'spear-goblins': {elixir: 2, rarity: 1}, 'tesla': {elixir: 4, rarity: 1}, 'the-log': {elixir: 2, rarity: 4},
+            'three-musketeers': {elixir: 9, rarity: 2}, 'tombstone': {elixir: 3, rarity: 2}, 'tornado': {elixir: 3, rarity: 3},
+            'valkyrie': {elixir: 4, rarity: 2}, 'wall-breakers': {elixir: 2, rarity: 1}, 'witch': {elixir: 5, rarity: 2},
+            'wizard': {elixir: 5, rarity: 2}, 'x-bow': {elixir: 6, rarity: 3}, 'zap': {elixir: 2, rarity: 1}, 'zappies': {elixir: 4, rarity: 2}
+        };
+        // Rarity: 1=Common, 2=Rare, 3=Epic, 4=Legendary, 5=Champion
+
+        let selectedCards = [];
+        let currentSort = 'rarity';
+        let sortDirection = 'desc'; // 'asc' or 'desc'
+        let cooldownTimer = null;
+        let cooldownSeconds = 0;
+
+        // Initialize the game
+        function init() {
+            renderOpponentDeck();
+            renderCardGrid();
+            updateYourDeck();
+            setupSortButtons();
+        }
+
+        // Setup sort button listeners
+        function setupSortButtons() {
+            const sortButtons = document.querySelectorAll('.sort-button');
+            sortButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const clickedSort = button.dataset.sort;
+
+                    // If clicking the same sort button, toggle direction
+                    if (currentSort === clickedSort) {
+                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        // Switching to a different sort
+                        // Remove active class from all buttons
+                        sortButtons.forEach(btn => btn.classList.remove('active'));
+                        // Add active class to clicked button
+                        button.classList.add('active');
+                        // Update current sort
+                        currentSort = clickedSort;
+                        // Default direction: ascending for alphabetical and elixir, descending for rarity
+                        sortDirection = clickedSort === 'rarity' ? 'desc' : 'asc';
+                    }
+
+                    // Update arrow indicators
+                    const arrow = button.querySelector('.sort-arrow');
+                    if (arrow) {
+                        arrow.textContent = sortDirection === 'asc' ? '↑' : '↓';
+                    }
+
+                    // Re-render grid with new sort
+                    renderCardGrid();
+                });
+            });
+        }
+
+        // Render opponent's deck
+        function renderOpponentDeck() {
+            const container = document.getElementById('opponentDeck');
+            container.innerHTML = '';
+
+            opponentDeck.forEach(cardName => {
+                const cardDiv = createCardElement(cardName, true);
+                container.appendChild(cardDiv);
+            });
+        }
+
+        // Render all available cards
+        function renderCardGrid() {
+            const container = document.getElementById('cardGrid');
+            container.innerHTML = '';
+
+            // Sort cards based on current sort method and direction
+            let sortedCards = [...allCards];
+            const directionMultiplier = sortDirection === 'asc' ? 1 : -1;
+
+            if (currentSort === 'alphabetical') {
+                sortedCards.sort((a, b) => a.localeCompare(b) * directionMultiplier);
+            } else if (currentSort === 'elixir') {
+                sortedCards.sort((a, b) => {
+                    const elixirDiff = (cardData[a].elixir - cardData[b].elixir) * directionMultiplier;
+                    return elixirDiff !== 0 ? elixirDiff : a.localeCompare(b);
+                });
+            } else if (currentSort === 'rarity') {
+                sortedCards.sort((a, b) => {
+                    const rarityDiff = (cardData[a].rarity - cardData[b].rarity) * directionMultiplier;
+                    return rarityDiff !== 0 ? rarityDiff : a.localeCompare(b);
+                });
+            }
+
+            sortedCards.forEach(cardName => {
+                const cardDiv = createCardElement(cardName, false);
+                cardDiv.addEventListener('click', () => toggleCard(cardName));
+                container.appendChild(cardDiv);
+            });
+        }
+
+        // Create a card element
+        function createCardElement(cardName, isOpponent) {
+            const div = document.createElement('div');
+            div.className = 'card' + (isOpponent ? ' opponent' : '');
+            div.dataset.card = cardName;
+
+            const img = document.createElement('img');
+            img.src = `./cr-api-assets/cards/${cardName}.png`;
+            img.alt = cardName;
+            img.onerror = function() {
+                this.src = './cr-api-assets/cards/knight.png'; // fallback
+            };
+
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'card-name';
+            nameDiv.textContent = cardName.replace(/-/g, ' ');
+
+            div.appendChild(img);
+            div.appendChild(nameDiv);
+
+            return div;
+        }
+
+        // Toggle card selection
+        function toggleCard(cardName) {
+            const index = selectedCards.indexOf(cardName);
+
+            if (index > -1) {
+                // Deselect
+                selectedCards.splice(index, 1);
+            } else {
+                // Select (if not already at 8)
+                if (selectedCards.length < 8) {
+                    selectedCards.push(cardName);
+                } else {
+                    alert('You can only select 8 cards! Deselect one first.');
+                    return;
+                }
+            }
+
+            updateCardGrid();
+            updateYourDeck();
+            updateCheckButton();
+        }
+
+        // Update card grid to show selected state
+        function updateCardGrid() {
+            const cards = document.querySelectorAll('.card-grid .card');
+            cards.forEach(card => {
+                const cardName = card.dataset.card;
+                if (selectedCards.includes(cardName)) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+        }
+
+        // Update your deck display
+        function updateYourDeck() {
+            const container = document.getElementById('yourDeck');
+            const counter = document.getElementById('deckCounter');
+
+            counter.textContent = `Selected: ${selectedCards.length}/8 cards`;
+            if (selectedCards.length === 8) {
+                counter.classList.add('full');
+            } else {
+                counter.classList.remove('full');
+            }
+
+            container.innerHTML = '';
+
+            if (selectedCards.length === 0) {
+                const message = document.createElement('div');
+                message.style.cssText = 'grid-column: 1/-1; color: #ffeb3b; text-align: center; padding: 20px; font-size: 16px; font-weight: bold;';
+                message.textContent = 'Select 8 cards from below to build your counter deck';
+                container.appendChild(message);
+            } else {
+                selectedCards.forEach(cardName => {
+                    const cardDiv = createCardElement(cardName, true);
+                    container.appendChild(cardDiv);
+                });
+            }
+        }
+
+        // Update check button state
+        function updateCheckButton() {
+            const button = document.getElementById('checkButton');
+
+            // If on cooldown, show countdown
+            if (cooldownSeconds > 0) {
+                button.disabled = true;
+                button.textContent = `Wait ${cooldownSeconds}s...`;
+                return;
+            }
+
+            if (selectedCards.length === 8) {
+                button.disabled = false;
+                button.textContent = 'Check Deck';
+            } else {
+                button.disabled = true;
+                button.textContent = `Check Deck (Select ${8 - selectedCards.length} more)`;
+            }
+        }
+
+        // Start cooldown timer
+        function startCooldown() {
+            cooldownSeconds = 15;
+            updateCheckButton();
+
+            // Clear any existing timer
+            if (cooldownTimer) {
+                clearInterval(cooldownTimer);
+            }
+
+            // Start countdown
+            cooldownTimer = setInterval(() => {
+                cooldownSeconds--;
+
+                if (cooldownSeconds <= 0) {
+                    clearInterval(cooldownTimer);
+                    cooldownTimer = null;
+                }
+
+                updateCheckButton();
+            }, 1000);
+        }
+
+        // Check the deck
+        function checkDeck() {
+            let correctCount = 0;
+
+            selectedCards.forEach(card => {
+                if (correctCounters.includes(card)) {
+                    correctCount++;
+                }
+            });
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.classList.remove('success');
+            resultDiv.classList.add('show');
+
+            if (correctCount === 8) {
+                // Perfect! Show success message (no cooldown needed - they won!)
+                resultDiv.classList.add('success');
+                resultDiv.innerHTML = `
+                    <div>🎉 PERFECT! 🎉</div>
+                    <div class="counter-count">${correctCount}/8</div>
+                    <div>You found all the correct counters!</div>
+                    <div style="margin-top: 20px; font-size: 18px; color: #2c3e50; font-weight: bold;">
+                        Look in a pot
+                    </div>
+                `;
+            } else {
+                // Show progressive clue based on how many correct
+                const clueToShow = clues[correctCount] || clues[clues.length - 1];
+
+                resultDiv.innerHTML = `
+                    <div>Not quite right...</div>
+                    <div class="counter-count">${correctCount}/8</div>
+                    <div>You have ${correctCount} correct counter${correctCount !== 1 ? 's' : ''}. Keep trying!</div>
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.5); border-radius: 8px; border-left: 4px solid #3498db;">
+                        <div style="font-weight: bold; color: #2980b9; margin-bottom: 5px;">💡 Clue:</div>
+                        <div style="font-size: 16px; color: #2c3e50; font-style: italic;">${clueToShow}</div>
+                    </div>
+                `;
+
+                // Start 15-second cooldown (only if they didn't win)
+                startCooldown();
+            }
+        }
+
+        // Clear all selected cards
+        function clearAllCards() {
+            selectedCards = [];
+            updateCardGrid();
+            updateYourDeck();
+            updateCheckButton();
+
+            // Hide result if showing
+            const resultDiv = document.getElementById('result');
+            resultDiv.classList.remove('show');
+        }
+
+        // Event listeners
+        document.getElementById('checkButton').addEventListener('click', checkDeck);
+        document.getElementById('clearButton').addEventListener('click', clearAllCards);
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
