@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Off Menu - Dream Restaurant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #1a1a1a;
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Scrolling Banner */
+        .marquee-container {
+            width: 100%;
+            background: #ff6b35;
+            padding: 3% 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Fade effect at edges */
+        .marquee-container::before,
+        .marquee-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 200px;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .marquee-container::before {
+            left: 0;
+            background: linear-gradient(to right, #ff6b35, transparent);
+        }
+
+        .marquee-container::after {
+            right: 0;
+            background: linear-gradient(to left, #ff6b35, transparent);
+        }
+
+        .marquee {
+            display: flex;
+            white-space: nowrap;
+            animation: scrollWithWave 20s linear infinite;
+        }
+
+        .marquee-content {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+
+        .marquee-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            padding: 0 0.5em;
+        }
+
+        @keyframes scrollWithWave {
+            0% {
+                transform: translateX(0) translateY(0px);
+            }
+            12.5% {
+                transform: translateX(-6.25%) translateY(-3px);
+            }
+            25% {
+                transform: translateX(-12.5%) translateY(0px);
+            }
+            37.5% {
+                transform: translateX(-18.75%) translateY(3px);
+            }
+            50% {
+                transform: translateX(-25%) translateY(0px);
+            }
+            62.5% {
+                transform: translateX(-31.25%) translateY(-3px);
+            }
+            75% {
+                transform: translateX(-37.5%) translateY(0px);
+            }
+            87.5% {
+                transform: translateX(-43.75%) translateY(3px);
+            }
+            100% {
+                transform: translateX(-50%) translateY(0px);
+            }
+        }
+
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 20px;
+        }
+
+        .container {
+            background: #2a2a2a;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 50px 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ff6b35;
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #e0e0e0;
+            font-size: 1.3em;
+            margin-bottom: 40px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #ff6b35;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #444;
+            border-radius: 4px;
+            transition: all 0.3s;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #3a3a3a;
+            color: #fff;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #ff6b35;
+            background: #444;
+        }
+
+        input[type="text"].filled {
+            border-color: #4caf50;
+            background-color: #2d4a2d;
+        }
+
+        input[type="text"]::placeholder {
+            color: #888;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        button:hover {
+            background: #ff5722;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #2d4a2d;
+            color: #4caf50;
+            border: 2px solid #4caf50;
+        }
+
+        .message.error {
+            background-color: #4a2d2d;
+            color: #f44336;
+            border: 2px solid #f44336;
+        }
+
+        .header-image {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            display: block;
+            margin: 0 auto 30px auto;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Scrolling Banner -->
+    <div class="marquee-container">
+        <div class="marquee">
+            <!-- Duplicate the content twice for seamless looping -->
+            <div class="marquee-content">
+                <span class="marquee-text">Welcome to the Dream Restaurant</span>
+                <span class="marquee-text">〰️</span>
+                <span class="marquee-text">We've Been Expecting You for Some Time</span>
+                <span class="marquee-text">〰️</span>
+            </div>
+            <div class="marquee-content">
+                <span class="marquee-text">Welcome to the Dream Restaurant</span>
+                <span class="marquee-text">〰️</span>
+                <span class="marquee-text">We've Been Expecting You for Some Time</span>
+                <span class="marquee-text">〰️</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="container">
+            <img src="EdAndJames.png" alt="Ed Gamble and James Acaster" class="header-image">
+            <h1>Welcome to the Dream Restaurant!</h1>
+            <h2>Create the perfect meal:</h2>
+
+            <form id="dreamMealForm">
+                <div class="form-group">
+                    <label for="water">Water</label>
+                    <input type="text" id="water" name="water" list="waterList" autocomplete="off" placeholder="Start typing...">
+                    <datalist id="waterList"></datalist>
+                </div>
+
+                <div class="form-group">
+                    <label for="bread">Bread</label>
+                    <input type="text" id="bread" name="bread" list="breadList" autocomplete="off" placeholder="Start typing...">
+                    <datalist id="breadList"></datalist>
+                </div>
+
+                <div class="form-group">
+                    <label for="starter">Starter</label>
+                    <input type="text" id="starter" name="starter" list="starterList" autocomplete="off" placeholder="Start typing...">
+                    <datalist id="starterList"></datalist>
+                </div>
+
+                <div class="form-group">
+                    <label for="main">Main</label>
+                    <input type="text" id="main" name="main" list="mainList" autocomplete="off" placeholder="Start typing...">
+                    <datalist id="mainList"></datalist>
+                </div>
+
+                <div class="form-group">
+                    <label for="dessert">Dessert</label>
+                    <input type="text" id="dessert" name="dessert" list="dessertList" autocomplete="off" placeholder="Start typing...">
+                    <datalist id="dessertList"></datalist>
+                </div>
+
+                <button type="submit">Submit Dream Meal</button>
+            </form>
+
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script>
+        // Embedded menu data
+        menuData = {
+            "water": [
+                        "\"Whatever's easiest\", convinced to then have half still and half sparkling",
+                        "2 pints of Neck Oil (from Beavertown)",
+                        "A big, expensive bottle of sparkling water, with a champagne flute to drink from",
+                        "A drink at the bar: Vieux Carré. Then, Gin with elderflower liqueur and a bit of squeezed lime",
+                        "A glass bottle of still water",
+                        "A glass of sparkling Thames water",
+                        "A glass of water from the river in the valley of the mad",
+                        "A goblet of soft wine and a goblet of hard beer",
+                        "A lemonade and then have still water",
+                        "A pint of very cold sparkling water with some lime",
+                        "Aggressively cold, angry sparkling (until the penguin screams)",
+                        "Amuse Bouche: Trek bar. Water: Dash water with lime",
+                        "An hour before the meal: Ready salted Walkers crisps dipped in soy sauce. Then a twenty minute walk to the restaurant. A pint of really sparkling water, more bubbles than water, with ice. Throughout the meal: still water",
+                        "An ice bucket of Mexican Coca Cola",
+                        "An imperial gallon of diet cloudy lemonade",
+                        "Blackburn tap water from her mum's kitchen tap",
+                        "Both",
+                        "Chef's welcome: bite-size haggis tacos from Chuchos, followed by aperitif: a Custardo from Forza Win, for water: a lime and sea salt Kombucha from You and I with Kombucha crushed ice",
+                        "Chef's welcome: bowl of chicken skins from Speedboat Bar , followed by aperitif: a rhubarb Negroni from the Black Swan, for water: Cru Champagne that tastes like it does after a wedding ceremony",
+                        "Cold sparkling water with crushed ice",
+                        "Cold still water with a hangover that disappears at the first sip",
+                        "Compari on ice with orange, then sparkling water",
+                        "Elderflower presse from Cafe Coco with a Vodka Martini (with a twist, no Vermouth, glass straight from the freezer) with a bowl of olives",
+                        "Fizzy lifting water",
+                        "Fresh Scottish mineral water",
+                        "Gin Martini then sparkling water",
+                        "Gin and Tonic",
+                        "Gin and Tonic with Signet, a slice of blood orange, and ice followed by a bloody mary",
+                        "Glasgow tap water",
+                        "Goblet held under a waterfall",
+                        "Highland Spring still water",
+                        "Ice cold sparkling water",
+                        "Ice water from the South Pole that's melted",
+                        "Kettering tap water",
+                        "Lightly sparkling",
+                        "Liquefied party rings from the 80's",
+                        "Macaroni Cheese",
+                        "Medium sparkling Gerolsteiner from Germany",
+                        "Mit Sprudel",
+                        "Orange Robinsons squash with sparkling water",
+                        "Orangina",
+                        "Pass",
+                        "Pint of Guinness",
+                        "Plum flavoured drinking vinegar",
+                        "Really cold still water",
+                        "Rhubarb Cawston Press (with crushed Cawston Press ice)",
+                        "Ribena",
+                        "Robinson's Peach Barley Water (quite weak)",
+                        "Room temperature Northern tap water",
+                        "Room temperature still water on a drip",
+                        "S.Pellegrino (with lemon)",
+                        "S.Pellegrino in a glass bottle",
+                        "Sealed bottle of still Evian",
+                        "Spakling water with a slice of lemon",
+                        "Sparking ice and lime",
+                        "Sparkling",
+                        "Sparkling (Cherry bubly)",
+                        "Sparkling (frizzante)",
+                        "Sparkling (from YO! Sushu tap)",
+                        "Sparkling (left open overnight)",
+                        "Sparkling (with big bubbles in a wine glass)",
+                        "Sparkling - San Peligrino and a Martini",
+                        "Sparkling Vichy water",
+                        "Sparkling Water",
+                        "Sparkling party water",
+                        "Sparkling tap water",
+                        "Sparkling water",
+                        "Sparkling water and a flat white coffee",
+                        "Sparkling water in a thin rimmed glass with ice and lemon, a tap water and a ginger beer, and that to keep coming throughout the whole meal",
+                        "Sparkling water with Ribena",
+                        "Sparkling water with a dash of something (maybe Elderflower)",
+                        "Sparkling water with a jug of fresh lime juice with Margaux red wine from the beginning",
+                        "Sparkling water with a loose-skinned Japanese lime",
+                        "Sparkling water with a wedge of lime (that is for you to squeeze into it), no ice",
+                        "Sparkling water with bitters and a wedge of grapefruit",
+                        "Sparkling water with ice and a squeeze of lemon",
+                        "Sparkling water with lemon and ice and some glitter in it",
+                        "Sparkling water with one big bubble and a drop of lime cordial",
+                        "Sparkling with an oxygen tank",
+                        "Sparkling with blackcurrant cordial",
+                        "Sparkling with ice (in a metal cup)",
+                        "Sparkling with ice and lime",
+                        "Sparkling with ice and lime and a tap water wheel",
+                        "Sparkling with lemon, cucumber, mint and strawberries (loads of ice)",
+                        "Sparkling with lime",
+                        "Sparkling with limes",
+                        "Sparkling Nothing",
+                        "Squash sachet with ice cubes (made with water from Whitby)",
+                        "Still",
+                        "Still (BRITA filtered)",
+                        "Still (cold with crushed ice)",
+                        "Still (filtered, with a lemon)",
+                        "Still (from babbling French brook diverted to the dream restaurant under a full moon)",
+                        "Still (from the fountain of youth from Big John, Little John)",
+                        "Still (house water)",
+                        "Still (in a glass Strathmore bottle to take home)",
+                        "Still (in a jug)",
+                        "Still (initially) Sparkling",
+                        "Still (not tap)",
+                        "Still (not too cold)",
+                        "Still (recommended by the Genie)",
+                        "Still (room temperature)",
+                        "Still (room temperature) in a big bottle",
+                        "Still (sparkling if it's fancy) water with a twist of lemon and one ice cube",
+                        "Still (tap)",
+                        "Still (tepid)",
+                        "Still (very icy)",
+                        "Still (with ice and a slice)",
+                        "Still (with ice)",
+                        "Still from the Turkish shop",
+                        "Still water",
+                        "Still water in a glass with good girth, heft weight and lip",
+                        "Still water out of a glass bottle",
+                        "Still water sucked from a hillside",
+                        "Still water with lemon and lots of ice",
+                        "Still water, with a single ice cube",
+                        "Still with Ice, Orange and Mango Robinson's creations",
+                        "Still with cucumber",
+                        "Still with ice",
+                        "Still with lemon",
+                        "Still with loads of squeezed lemon, no ice",
+                        "Still, not much ice with much lemon",
+                        "Still, with cucumber or lemon",
+                        "Taittinger champagne",
+                        "Tap",
+                        "Tap (from Ballymore)",
+                        "Tap (hard)",
+                        "Tap (in a nice jug)",
+                        "Tap (initially)",
+                        "Tap (loads of ice)",
+                        "Tap and still",
+                        "Tap from the hose in Ed's garden",
+                        "Tap water",
+                        "Tap water from grandparents shower",
+                        "Tap water from home",
+                        "Warm lemon water (2/3 boiling 1/3 freezing)",
+                        "Warm lemon water and a vodka martini with Crystal Head Vodka",
+                        "Water",
+                        "White Rock seltzer",
+                        "X",
+                        "Yorkshire tap water",
+                        "still water with a wedge of lemon",
+                        "‘Sparkling Sparkling’"
+            ],
+            "bread": [
+                        "\"Nice\" bread with slightly melted butter",
+                        "\"Serious bread\" (heavy sourdough or brown bread)",
+                        "'Bog standard' baguette",
+                        "'Floppadoms'",
+                        "'Pigeon focaccia' with olives, posh nuts and caper berries",
+                        "11 pence tear and share bread (from Tesco)",
+                        "A bread basket that gets topped up without ceremony, without you knowing, and without you having to ask",
+                        "A diverse bread basket (focaccia, sourdough, seeded) with whipped butter with volcanic black salt",
+                        "A fried egg, peanut butter and jam sandwich",
+                        "A heel of sourdough",
+                        "A hint of poppadoms with all the dips",
+                        "A light, crispy bread with his own olive oil",
+                        "A selection of German breads from the bakery",
+                        "A smooth bagel, toasted with Lurpak",
+                        "Afghan flatbread",
+                        "Agege bread with salt and butter",
+                        "All kinds of poppadoms with dips",
+                        "Amuse-bouche: Berkswell Pudding from L'Enclume, bread: bread with salted butter from Ed's wedding",
+                        "Amuse-bouche: pork dumpling from Xu, bread: The bread with both melted butters from Kudu",
+                        "Assortment of breads (Sourdough, focaccia, Ed's wedding bread) with salted butter",
+                        "Baguette with apricot jam and Lurpak",
+                        "Baguette with butter",
+                        "Banana Naan",
+                        "Big hunky granary loaf with Salted butter",
+                        "Biscuits with cinnamon honey butter (from Texas Roadhouse",
+                        "Both",
+                        "Bread (crispy white loaf with butter or oil, balsamic and tapenade)",
+                        "Bread (from Purnell's in Birmingham)",
+                        "Bread and butter (from The Wolseley)",
+                        "Bread basket from a Greek diner",
+                        "Bread basket with parmesan crisps (olive and balsamic vinegar on the side)",
+                        "Bread basket with pão de queijo, Irish soda bread, the inside of a croissant",
+                        "Bread from Dos Hermanos in Portland",
+                        "Bread from The Yellow House with salted butter",
+                        "Bread from popums/Jolene. Sourdough focacia Guniness Bread from Cafe Cecilia",
+                        "Bread selection with whipped butter",
+                        "Bread with basil, olives, buffalo mozzarella and tomatoes",
+                        "Bread with much butter",
+                        "Bread with rosemary, salt, olive oil and balsamic",
+                        "Bread with spoonfuls of butter",
+                        "Bread with yellow Welsh butter and salt crystals",
+                        "Brown bread from The Cheesecake Factory",
+                        "Brown bread with walnuts, white bread with olives, Guinness bread with loads of salt and olive oil (and vegan butter that tastes like normal butter)",
+                        "Brucetta from Halifax",
+                        "Burnt black sesame bread with Chicken liver pâté",
+                        "Butter naan",
+                        "Cajun shrimp from Spondivits",
+                        "Carrots and hummus with Steve-O's Hot Sauce For Your Butthole in the hummus",
+                        "Chapati",
+                        "Charred bread with garlic and olive oil",
+                        "Chip butty with fresh bread and salty butter",
+                        "Chip cob",
+                        "Chips and salsa from Gardens of Taxco",
+                        "Ciabatta and focaccia in a basket",
+                        "Ciabatta, dark rye bread, classic white rolls, much butter",
+                        "Ciabatta/Italian bread from local deli, served with olive oil",
+                        "Cloudy bread (that tears apart) with butter",
+                        "Cold toast with a thick layer of butter",
+                        "Corn chips and salsa",
+                        "Corrigan's soda bread and focaccia",
+                        "Cranks wholemeal with olive spread",
+                        "Crispy French baguette with Kerrygold, heel of batch loaf (Superquinn) and a little crisp sandwich with cheese and onion Tayto",
+                        "Crispy sourdough bread",
+                        "Crumpet loaf with butter from Greenhalgh's",
+                        "Crusty French bread and butter, and salt on a plane with the tray down, flown by Dave Rowntree",
+                        "Crusty bread with lots of salted butter",
+                        "Crusty white rolls with vegan salted butter and raw off cuts of dough",
+                        "Crusty, doughy, white bread and focaccia with chunky salt crystals and rosemary in the general vicinity, dipped in olive oil and balsamic vinegar",
+                        "Dad's garlic focaccia bread",
+                        "Dark rye bread",
+                        "Dough balls from Pizza Express with extra garlic butter",
+                        "Five poppadoms with all the dips",
+                        "Five poppadoms with mango chutney",
+                        "Fladenbrot with melted butter from a draft pump",
+                        "Focaccia (from uncle's bakery in Italy)",
+                        "Focaccia and sciachiatta and lots of salt",
+                        "Focaccia with olive oil",
+                        "Focaccia with olive oil and balsamic vinegar",
+                        "Focaccia with olive oil and salt and a vanilla latte made by the beautiful lady",
+                        "French baguette with a flight of Bordier Butter",
+                        "French bread (from Ma Cuisine, Kew), Cheesey bread (from Gaucho, London), and paratha",
+                        "French bread (so crusty it makes people laugh out loud when they bite into it)",
+                        "Fresh baguette (in 'debauched Paris')",
+                        "Fresh cut bread with butter at body temperature",
+                        "Fresh hot fluffy bread (with salted butter unveiled from behind a curtain)",
+                        "Freshly baked bread with freshly churned salted butter (from Frantzén, Stockholm)",
+                        "Gail's potato and Rosemary sourdough with Quicke's butter (whipped)",
+                        "Garlic Bread with cheese and marmite",
+                        "Garlic bread with red onions and mozzarella (from Prezzo)",
+                        "Garlic naan with 12 pots of mango chutney",
+                        "Garlicky cheesy bread with rosemary",
+                        "Gazpacho with olive oil cubes and a goldfish that will be removed and placed into sparkling water",
+                        "German bread selection and sourdough with grass-fed butter",
+                        "Gluten-free bread",
+                        "Guinness treacle bread with Dairygold butter",
+                        "Half from Babur poppadoms and half from BiBi cheese poppadoms with all the dips",
+                        "Hard dough bread",
+                        "Hearty, grainy, nutty bread and pretzel bread (with warm butter)",
+                        "Homemade garlic bread",
+                        "Honey & Co platter with salted butter popping up through the whole meal and labneh",
+                        "Hoppers with an egg",
+                        "Hot bread with chicken butter F**k all",
+                        "Hot cheesy puff bread",
+                        "Hot fresh Sourdough bread and a dark peasant loaf",
+                        "Injera",
+                        "Injera with a variety of dips and pickled herring (accompanied by Kentucky bourbon with caramelized peanuts)",
+                        "Irish soda bread with Kerrygold butter",
+                        "Joe's Club (from Joe & The Juice)",
+                        "Keema naan from Mother India with chiken pakora blended in",
+                        "Lovely bread with olive oil",
+                        "Lukewarm crusts with olive oil",
+                        "Maltese bread with olive oil, salt and balsamic vinegar",
+                        "Mary Louise's hot rolls",
+                        "Maximum poppadom with maximum chutneys",
+                        "Melba toast (with a tiny scraping of butter)",
+                        "Monkey bread with melted honey butter",
+                        "Morning roll",
+                        "Nadine's Street town house bread",
+                        "Nice crusty bread that doesn't fill him up",
+                        "Nineties Focaccia from Sainsbury's with Anchor butter",
+                        "Nutty brown bread with butter",
+                        "Olive bread with Reese's Pieces, bacon covered dates and olives baked inside",
+                        "Olive bread with olive oil, to be blessed by a priest",
+                        "Pain au chocolat from Meal",
+                        "Papads made with black lentils with coriander chutney with bread and bungay butter",
+                        "Pass",
+                        "Pass (poppadoms to take home)",
+                        "Pat and Martin's Bread and butter",
+                        "Peshwari Naan",
+                        "Peshwari naan",
+                        "Philadelphia bagel sandwich",
+                        "Pizza Express dough balls doppio",
+                        "Pizza Sticks (no cheese), with whipped butter and pork scratchings",
+                        "Plain bread",
+                        "Plain white Warburtons bread slightly toasted",
+                        "Popadoms with all the dips, plus a cherry cola-flavoured popadom sauce that looks like popadoms",
+                        "Poppadom sandwich with onion and mango chutney",
+                        "Poppadoms",
+                        "Poppadoms (from local curry house)",
+                        "Poppadoms (in a big Hessian sack)",
+                        "Poppadoms (no dips)",
+                        "Poppadoms (with Sweet chilli dip)",
+                        "Poppadoms (with all the chutneys)",
+                        "Poppadoms - mostly thin yellow with some of the others",
+                        "Poppadoms and bread",
+                        "Poppadoms and dips from Milan, Birmingham followed by some bread from Du Pain et des Idées, Paris with salted and unsalted butter",
+                        "Poppadoms karate chopped with mango chutney/ poppadom cheese sandwich with mango chutney",
+                        "Poppadoms or Bread",
+                        "Poppadoms with ALL the dips",
+                        "Poppadoms with Frank's, lime pickle, green dip, yoghurt dip, sambao",
+                        "Poppadoms with Mango chutney, Lime and pickle and The orange hot one",
+                        "Poppadoms with all the dips",
+                        "Poppadoms with all the dips on all the sections, no warm tomatoes",
+                        "Poppadoms with all the dips then an amuse-bouche: chicken liver parfait, with soldiers from Doriane",
+                        "Poppadoms with chutney and 'the green one' (the other two to be brought out just to look at)",
+                        "Poppadoms with chutney, raita and lime pickle",
+                        "Poppadoms with dips and the onion salad",
+                        "Poppadoms with four mango chutney dips",
+                        "Poppadoms with guacamole and raita",
+                        "Poppadoms with lime pickle, yoghurt, onion and sweet powdered coconut",
+                        "Poppadoms with mango chutney",
+                        "Poppadoms with mango chutney and 'the bright red onion one'",
+                        "Poppadoms with mango chutney, onion salad, and raita",
+                        "Poppadoms with mango chutney, raita and the red one",
+                        "Poppadoms with rice and curry",
+                        "Poppadoms with smooth chutney, onion salad and aioli",
+                        "Poppadoms with standard dips",
+                        "Poppadoms with the sauces syringed into mouth",
+                        "Poppadoms with traditional dips but no lime pickle",
+                        "Poppadoms with yogurt, lime pickle, mango chutney, raw onion",
+                        "Portuguese sweet bread beef slider",
+                        "Potato bread (from Pidgin, Hackney)",
+                        "Prawn crackers with Chinese mini meals",
+                        "Pretzel roll with salt butter",
+                        "Pumpernickel bread (with olive oil and butter)",
+                        "Puri",
+                        "Pão de queijo",
+                        "Raw sliced potato with honey mustard",
+                        "Roast beef focaccia with oil and balsamic",
+                        "Room full of poppadom that you can burst through whilst 'not make dirty' and mother's soda bread with Bandon Co-Op butter",
+                        "Roti canai with curry Iyan",
+                        "Round Moroccan bread (from 'the Scared Man')",
+                        "Russian blackbread",
+                        "Satan's cheese bread",
+                        "Scandi basket with crisp bread and Philadelphia low fat cream cheese",
+                        "Secret Turkish duvet bread (from an off-license)",
+                        "Seeded roll with butter",
+                        "Seeded sourdough toast with salted butter, marmalade, strawberry jam from Rickmansworth Aquadrome Cafe",
+                        "Shadow: poppadoms, Main: sourdough",
+                        "Skips the size of popadums",
+                        "Slice of mighty white, medium sliced with butter, shrimp primula, sliced cheese and a side of gluten with riboflavin and a biscoff Poptart",
+                        "Sliced baguette with unsalted butter",
+                        "Sourdough",
+                        "Sourdough (from Panzer's Deli, St John's Wood)",
+                        "Sourdough (not too crispy) with President salted butter",
+                        "Sourdough bread and butter with anchovies from Brat (with a bonus separate bread and butter)",
+                        "Sourdough bread with Kerrygold butter",
+                        "Sourdough bread with homemade tapenade",
+                        "Sourdough bread with olive oil and sea salt",
+                        "Sourdough bread with salted butter",
+                        "Sourdough bread with salted butter (from St. John, London)",
+                        "Sourdough from Bigsby Bakery with salted butter",
+                        "Sourdough from Bread by Bike with hummus at the end of the bike ride in the park with his children",
+                        "Sourdough from Paul's",
+                        "Sourdough from The Dusty Knuckle with salted butter",
+                        "Sourdough outsides",
+                        "Sourdough with orange marmalade",
+                        "Sourdough with salted butter and salt",
+                        "Sourdough with salted butter and tzatziki",
+                        "Spanish bread with plenty of aioli",
+                        "Spicy poppadom and plain poppadom with relishes, Spanish bread with olive oil and balsamic vinegar and his wife's focaccia",
+                        "Spicy poppadoms with all the dips, on a carpeted chair in Shama Bingley in 1998",
+                        "Tiger bread",
+                        "To bite the middle slices out of a Jackson's loaf of bread with candle butter",
+                        "Toast with tea",
+                        "Toasted white bloomer with marmite",
+                        "Tortilla chips and salsa",
+                        "Tortilla chips with mild spicy salsa and homemade guacamole",
+                        "Toutons, Mad Rock Cafe, Newfoundland",
+                        "Tray of avocados on toast with anchovies and olive oil sprinkled on it",
+                        "Tuna mayo poppadom with cucumber",
+                        "Unexpectedly hot roll with butter",
+                        "Warm Baguette",
+                        "Warm French bread (just crust)",
+                        "Warm Irish soda bread with butter made by any working class Irish woman",
+                        "Warm baguette with butter",
+                        "Warm bread selection with olive oil and 'Robin rock salt'",
+                        "Warm bread with butter",
+                        "Warm bread with herby salted butter",
+                        "Warm bread with olive oil and vinegar",
+                        "Warm crusty bread with butter",
+                        "Warm crusty bread, with oil",
+                        "Warm focaccia with rosemary, salt and black pepper",
+                        "Warm olive and tiger bread hybrid",
+                        "Warm soda bread (in a tin) with butter",
+                        "Warm soft bread with creamy, almost melted butter",
+                        "Warm sourdough with brown butter",
+                        "Warm toasted ciabatta with M&S Truffle Chicken Liver Paté",
+                        "Warm white bap with a salted, room temperature disc of butter",
+                        "Warm white sourdough bread with salted butter",
+                        "Warm wholemeal bread roll with raisins and butter",
+                        "White bloomer with butter and lime pickle",
+                        "White crusty bread (no bits) with salted butter",
+                        "Wholegrain roll with honey salted butter",
+                        "bread from Moro with olive oil"
+            ],
+            "starter": [
+                        "'Canal dredged' dairy chowder",
+                        "'Meat Fruit' from Dinner by Heston",
+                        "'Mystery soup'",
+                        "12 Oysters with cocktail sauce, horseradish and lemon",
+                        "2 Gregg's pasties",
+                        "2 vegan duck pancakes (from Chung Ying)",
+                        "24 oysters with shallots and red wine vinegar. His wife's special scallops with the disks of Clonakilty black pudding with a minty pea puree of fried quails egg, and a disk of fried apple",
+                        "3 hours of crisps (Twiglets, Pringles, bacon rashers, onion rings, salt and vinegar stix, peanuts, cashew nuts, cheese straws, hula hoops, Doritos, barbeque rib Nik Naks, crinkly mini cheddars, pretzels, Wotsits, cheese quavers and space raiders.) Served in separate bowls + surprise snacks every 20 minutes",
+                        "6 Oysters from Ireland with a vinaigrette from Italian Fish Club, Liverpool, 3 Tabasco sauces and langoustines with garlic butter",
+                        "6 slices of Hovis granary toast with butter",
+                        "6-7 types of thinly cut steak with garlic butter (from Bespoke Butchers in Toronto)",
+                        "A bowl of peeled lychees (and a gerbil)",
+                        "A crisp platter with dips and Jules Watson's pork crackling, one hairless pork scratching",
+                        "A seafood platter, scallops, king prawns, yellow tail ceviche, caviar and butter from a goat’s breast with pickled cucumbers and beetroot",
+                        "A selection of dumplings (from My Neighbours The Dumplings, Clapton)",
+                        "A tomato tart from The Ivy, Pasta, spaghetti pesto",
+                        "A trio of small sandwiches/sliders. the mackerel from Mangal II, the Dexter cheeseburger from the Plimsoll and a KFC Zinger Tower burger",
+                        "A very large prawn cocktail with prawns that he has seen and selected himself, along with flecks of lobster and crab",
+                        "A wedge salad",
+                        "Akee and salt fish dumplings",
+                        "Amuse-bouche - Sour cream with caviar and crisps. Starter - Prawn toast with black sesame seeds, sweet and spicy dip and crispy seaweed from a high end Chinese or Thai restaurant",
+                        "Anchovy toast from the Carlton Wine Room, Melbourne, and oyster and a half Martini from Bar Margaux, London",
+                        "Antipasti (no mortadella, to be thrown out of the window)",
+                        "Antipasti to share with her husband. A 'yummy one' with tomatoes, mozzarella, mushrooms, salami, honey melon with the pancetta around it. More bread. Sun-dried tomatoes. Fried zucchini.",
+                        "Anything from Les Ambassadeurs",
+                        "Aperitif - Banana antibiotics. Hors d'oeuvre - Pickled Scrumion McCoy's 2011. Amuse-bouche - Stolen Portuguese breakfast buffet roll, cheese, onion, tomato, butter, and mustard, at the 12th hole. Fish course - Cured Alaskan salmon, listening to the Rolling Stones Greatest Hits. Palette cleanser - Auntie Anne's crème de menthe ice cream",
+                        "Avocado prawn cocktail (not remember avocado and be reintroduced)",
+                        "Avocado with vinaigrette",
+                        "Baba ghanoush, tabouleh, hummus and shawarma with bread",
+                        "Baked Camembert with fresh baguette and Israeli French wine",
+                        "Barbecue chicken wontons (from Planet Hollywood)",
+                        "Battered parmesan, artichoke and broccolini",
+                        "Beef carpaccio with capers, parmesan and rocket, plus nine oysters",
+                        "Beef shin ragu tagliatelle (from Trulo, Islington)",
+                        "Beetroot and goat cheese with candied walnut",
+                        "Benito box (fresh calamari straight out the water, big Scottish oyster with Tabasco and barbecue octopus)",
+                        "Bites and sips. Lamb bap from the Red Lion, Birmingham. Bread and mussel sauce with a little bit of bread, cube of bread vegetable soup (Chorba) from Rotherhithe",
+                        "Bone marrow on focaccia from Annabel's Pasta Bar. The Sarandos course: Two carnitos tacos from La Tacoria, and one Barbacoa taco from Barbacoa el Primo, and a grapefruit horitos",
+                        "Breaded brie with cranberry sauce, salad and balsamic vinegar (from the Black Swan in 'The Dip' at a pub quiz with her team)",
+                        "Breaded calamari",
+                        "Broccoli soufflé",
+                        "Bruschetta",
+                        "Bruschetta from Italy, Red sauce and chorizo pasta",
+                        "Bruschetta from Rudolf Nureyev's private island",
+                        "Brussels sprouts with samphire, salt and pepper and the gooey stuff (from The Tofu) and vegan cream cheese (made by her partner)",
+                        "Bucket of 'fantasy olives' and sundried tomatoes with chorizo",
+                        "Buffalo mozzarella, tomatoes, basil, balsamic, caprese salad, olive oil salad",
+                        "Build-your-own melba toast with mackerel paté",
+                        "Burrata caprese salad from the Gaucho",
+                        "Burrata with fresh tomatoes and basil after a Dirty martini with 3 olives in",
+                        "Cacio e pepe with chilli flakes on the side (from Via Carota)",
+                        "Caesar salad",
+                        "Calamari",
+                        "Calamari (from Busaba)",
+                        "Caprese salad",
+                        "Caprese salad (with fresh burrata)",
+                        "Cashew tomato cream soup (from Shopsin's)",
+                        "Ceviche",
+                        "Ceviche (made with vodka)",
+                        "Chaat (from Dishoom)",
+                        "Champagne oysters with rosè",
+                        "Charcuterie plate",
+                        "Chargrilled Oysters, with Harris Gin Martini with 4 olives",
+                        "Cheese board (manchego with quince jelly, brie with strawberries, Comté, smoked cheese, goat's cheese with ash)",
+                        "Cheese soufflé with butterfly salad and olive oil",
+                        "Cheeseburger spring rolls from Disneyworld. Pasta course: Mom's crab fat noodles from Magna Kusina",
+                        "Cheesy garlic bread (from Pizza Hut)",
+                        "Cheesy truffle risotto from Es Pati",
+                        "Chicken Liver Pate with caramelised onion jam and more baguette",
+                        "Chicken Tikka wrap from Harrod's",
+                        "Chilli heatwave Doritos and a sour cream dip",
+                        "Chinese platter: spring rolls, chicken satay, venison puffs (from Park Chinois, Mayfair)",
+                        "Chopped liver (from Panzer's) with IKEA crispy bread",
+                        "Chunky pea soup with white pepper",
+                        "Cold skin noodles from Xi'an Famous Foods",
+                        "Colin The Caterpillar (face and neck)",
+                        "Collard greens and cornbread",
+                        "Corn chowder from The Ivy (Los Angeles)",
+                        "Corn tortilla chips with salsa",
+                        "Crab claws, served throughout (made by Ogie Maloney in the Summer of 1986)",
+                        "Cream of celery soup from lily langtree’s",
+                        "Creamy fish chowder in a bread bowl",
+                        "Crispy aromatic duck pancakes",
+                        "Crispy calamari",
+                        "Crispy calamari and truffle arancini (with aioli)",
+                        "Crispy duck pancakes",
+                        "Crispy duck pancakes on a lazy Susan",
+                        "Crispy duck pancakes with triple cooked patatas bravas and chilli and ginger braised cauliflower",
+                        "Crispy squid with lemon juice",
+                        "Crispy tuna with jalapeños (from Nobu)",
+                        "Crostini",
+                        "Curried chicken fried dumplings made by herself on MasterChef",
+                        "Deep fried mozzarella with spicy tomato dip",
+                        "Deep fried prawns with sweet chilli sauce from Pappagone",
+                        "Deep friend haggis with sauce from city restaurant, Edinburgh",
+                        "Deluxe prawn cocktail In your dreams",
+                        "Dill pickles (from Katz's Deli, New York)",
+                        "Dim sum platter (from Hakkasan)",
+                        "Dream plate of nachos with black sour cream, salsa fresca, jalapeno",
+                        "Dressed crab with lemon, seafood sauce, cockles, and burnt artichokes",
+                        "Duck pancakes with the chilli oil and the fresh chilli's, Ed gets margherita pizza",
+                        "Dutch croquettes (from FEBO)",
+                        "Eggplant Parm from Capannina, Capri",
+                        "Escarole salad",
+                        "Fennel and apple salad from Irvine Bar and Grill. Pasta course: cacio e pepe from The Local in LA",
+                        "French onion soup and a saucer of your home made aubergine parmigiana",
+                        "French onion soup from Bordeaux",
+                        "French onion soup with gruyère and a massive crouton with a cheese plate on the side",
+                        "Fresh burrata from Genoa",
+                        "Fresh calamari and mayonnaise",
+                        "Fried green tomatoes with coleslaw",
+                        "Fruits de mer (from Le Channel in Calais)",
+                        "Full mini fryup",
+                        "Gambas Pil Pil with freshly made baguette and olive oil",
+                        "Garlic crab claws with butter (from Moran's Oyster Cottage)",
+                        "Gazpacho with ice cubes",
+                        "Gizdodo from Enish",
+                        "Gnocchi with nutmeg butter",
+                        "Grandmother's semolina gnocchi with cheese and nutmeg",
+                        "Greek Mezze (includes: taramasalata, hummus, olives, random bits of meat, breadsticks, cheese straws, mini pork pies, cocktail sausages and gherkins)",
+                        "Green salad with a mango vinaigrette from Café Gratitude",
+                        "Grilled oysters with breadcrumbs, garlic, chorizo and spinach",
+                        "Grilled peaches (from brother's rugby house party)",
+                        "Half a dozen east coast oysters",
+                        "Halloumi with coriander and tomatoes",
+                        "Ham and cheese toastie",
+                        "Hand dived scallops (from The Ritz)",
+                        "Heinz Oxtail Soup",
+                        "His mom's prawn cocktail",
+                        "Homemade cheese on toast with tomato",
+                        "Homemade spaghetti bolognese (pre-2008 financial crash and made with cream)",
+                        "Hummus with sliced egg, hot sauce and pickles",
+                        "Jollof rice with Dodo",
+                        "Jumbo king prawns (barbecued by her old Australian nanny)",
+                        "Kettle crisps from the 1990s and the present day",
+                        "Kull yaw kofte with schmaltz from Mangal II with a pickleback. Pasta course: A potato and pecorino ravioli with prosciutto crudo from Café Paci",
+                        "Kumamoto oysters",
+                        "Lactase tablet (snorted) and a cheese soufflé (from Le Gavroche)",
+                        "Lamb seekh kebabs (from Owl & Pussycat Pub, Leicester)",
+                        "Linguine with fresh white crab meat, medium chilli, lemon and olive oil",
+                        "Little Aunt Bessie's Yorkshire puddings filled with intense cottage pie and two different soups: mushroom and half red pepper, half yellow pepper soup.",
+                        "Mackerel tart with 1980s salad and spinach",
+                        "Mango kushy punch",
+                        "Mashed roast potato with caviar and creme fraîche (during an argument)",
+                        "Matzah ball soup (homemade)",
+                        "Meat fruit (from Dinner by Heston Blumenthal)",
+                        "Medium-fatty tuna Nigiri from Araki",
+                        "Medium-rare steak tartare with the egg on top, main-size portion",
+                        "Mezze: plain crisps and cheese, peanuts, olives, marmite crisp breads, deep fried artichoke, fish goujons and padrón peppers",
+                        "Mixed meat and fish Bolangu with masa bread",
+                        "Monster caprese",
+                        "Mortadella three ways. Pasta course: buttery pasta",
+                        "Mozzarella cheese sticks with marinara",
+                        "Mum's broccoli, potato and onion soup with O'Donnell's brown bread and Kerrygold butter",
+                        "Mum's leek and potato soup",
+                        "Mushroom arancini (golf ball size)",
+                        "Mushrooms in a bag (from Social Eating House)",
+                        "Nachos with guacamole",
+                        "Nachos with nut cheese to share (from Manna)",
+                        "ODEON hotdog with ketchup and mustard",
+                        "Okonomiyaki from Osaka",
+                        "Old school prawn cocktail",
+                        "Oyster with shallot vinegar, tabasco and champagne sauce",
+                        "Oysters",
+                        "Oysters (from Castleford Loch)",
+                        "Oysters Kirkpatrick",
+                        "Oysters plain, Rockerfeller and deep fried Vancouver Oyseters, with villa spirulina white wine",
+                        "Panipuri",
+                        "Pass",
+                        "Pecorino, stilton and red pepper jelly with pappardelle pesto",
+                        "Peking soup (from Hing Wa in Gothenburg)",
+                        "Pepper Crunch sandwich from Crunch & Co.",
+                        "Phanaeng with tofu, bell peppers, not too much cabbage and jasmine rice",
+                        "Pickled Onion Monster Munch, vegan, double-coated",
+                        "Pint of Prawn Cocktail",
+                        "Plate of chips from Ely",
+                        "Potato cake, with a cheese and potato pasty and a meat and potato pasty from Ye Olde Pastie Shoppe, Bolton",
+                        "Potted shrimps with toast",
+                        "Poutine from The Poutinerie",
+                        "Prawn and lobster bisque",
+                        "Prawn cocktail",
+                        "Prawn cocktail (small and big prawns)",
+                        "Prawn pil pil (The Old Spot Ballsbridge) with chorizo from The Port House + 1 chicken wing from The Canal Bank Cafe on the side",
+                        "Prawn pil pil with crusty bread",
+                        "Prawn puri",
+                        "Pre meal: Six oysters with a Guinness, frites and mayonnaise Starter: Steak tartare with a dirty martini and a side jar (from Musso & Frank Grill)",
+                        "Puttanesca pasta",
+                        "Quail and flat champagne aspic",
+                        "Quinoa butternut squash salad with French dressing and healthy stuff (maybe jackfruit wings with barbecue sauce)",
+                        "Raw oysters (straight out of the ocean, chilled)",
+                        "Razor clams with breadcrumbs and lemon and herb oil",
+                        "Saag Paneer",
+                        "Salad of endives, Roquefort, walnuts and dressing",
+                        "Salad with radicchio, parsley, watercress and 'Oliver Oysters' (Oyster with shallot vinegar, tabasco and champagne sauce)",
+                        "Salmon roe with betel nut leaf (from Kebaya, Penang)",
+                        "Salmon sashimi with pickled ginger, Elvis and Fireman Sam sausages for the table, with ketchup",
+                        "Samosa Chaat (from Zindiya in Birmingham) with Soya Tikka",
+                        "Scallion pancakes with Soya sauce",
+                        "Scallops and dim sum",
+                        "Seafood tower: crab meat, lobster, jumbo shrimp, sushi rolls (with mustard hot sauce and cocktail sauce)",
+                        "Shadow: Greek salad, Main: shrimp cocktail Main secondi: Steve Coogan's daughters pasta",
+                        "Shrimp cocktail",
+                        "Shrimp cocktail from The Seafood Shack",
+                        "Shrimp cornucopia with shrimp three ways: dumplings, tempura and cocktail",
+                        "Six oysters, vinaigrette and shallots with Kir Royale",
+                        "Six pan fried scallops with lemon, salt, and chilli",
+                        "Smoked salmon (from Mars)",
+                        "Smoked salmon with capers and onions",
+                        "Smoked salmon, crème fraîche and dill on potato latkes from the Four Seasons Hotel in Toronto",
+                        "Soft shell crab and deep fried crispy prawns with chilli sauce",
+                        "Som tam papaya salad",
+                        "Spaghetti ai ricci di mare",
+                        "Spaghetti with red sauce",
+                        "Spicy buffalo wings (from Dublin's in Chicago)",
+                        "Spicy dumplings from White Bear",
+                        "Spinach salad",
+                        "Starter",
+                        "Steak sandwich",
+                        "Stir-fried kangkong with sambal",
+                        "Sweet and salty popcorn",
+                        "Sweet loaves (from Red Lobster)",
+                        "Taco El Al Pastor from a Mexico City street vendor",
+                        "The gooduckenouffle surprise",
+                        "The impossible cigar from Crossroads",
+                        "Thinly sliced ripe pear with magic ham and balsamic drizzlette with some crushed walnuts in the middle of the table",
+                        "Three courgette flowers stuffed with ricotta, followed by a pasta course of a Risotto Alla Milanese",
+                        "Tofu Jianbing",
+                        "Tom kha kai with chicken (from Thai Tom)",
+                        "Tom yum soup",
+                        "Tomato and basil 3.0 (from Atelier Crenn), with South American Smoothie from Tropicana",
+                        "Tomato and burrata salad with basil, olive oil, salt and pepper from Speranza in LA",
+                        "Tomato tart from The Lemon Tree",
+                        "Tortilla Lasagna (Made at home)",
+                        "Tower of crab with avocado",
+                        "Tricolore salad, tuna nigiri, grilled halloumi, hummus with pitta, watermelon, duck and cashew salad, creamed polenta and mushrooms (for the table)",
+                        "Triple melon vape, Lost Mary vape, three cappuccinos",
+                        "Tuna and beef tataki (from Nobu, Miami)",
+                        "Tuna carpaccio (from The Ivy, Bath)",
+                        "Tuna melt",
+                        "Tuna sashimi (from SexyFish)",
+                        "Tuna tartare (caviar, diced avocado and carmalised chilli rings) (from The Four Seasons)",
+                        "Tuna tartare (with a limoncello)",
+                        "Tzatziki from Lemonia",
+                        "Unlimited rock oysters with lots of Tabasco, vinegar and a wedge of lemon. Truffle pasta from Paoli in Florence",
+                        "Vegan chicken and waffles from Urban Vegan Kitchen (only up to the bite where it still tastes good)",
+                        "Vegan crispy rice salad",
+                        "Vetkoek with snook fish and polony",
+                        "Warm slice of cherry pie and a black coffee",
+                        "Wedge salad with blue cheese and bacon",
+                        "Wonton soup",
+                        "Yasai itame from Wagamama (No noodles)",
+                        "Yuk Sung",
+                        "boneless fish platter including: salmon, char-grilled octopus, lobster (shelled), massive prawns with loose shells served with light mayonnaise, radishes, and cucumbers with crudités on the side",
+                        "chilli salted corn ribs as your starter",
+                        "dynamite shrimp from P.F. Chang's",
+                        "part one of the starters, three scallops with the roe, in their shells with garlic butter and onions. Part two: Big fuck off prawns with onion",
+                        "the smell of your own brain, sizzling in a pan",
+                        "‘Yoghurt explosion’ (from Gaggan in Thailand)"
+            ],
+            "main": [
+                        "\"Perfect\" chicken vindaloo with poppadoms and chips",
+                        "'Charlie's Back Door' enchilada dipped in tempura batter",
+                        "'Coq O'Doherty?' (chicken and vegetables in a French inspired cooking pot)",
+                        "'Picky bits' (steamed rice and bellied pork, roast duck, Char siu, ‘prawn dicks’, Linda McCartney fake chicken bucket, roast garlic mayo, hollandaise, sriracha mayo, vegan honey soy sauce, black garlic ketchup, tarragon mayo)",
+                        "16 inch pizza with onions (from Nino's in New York)",
+                        "2 Chicken Kievs from Waitrose, with chips and peas (not from Waitrose) and loads of ketchup",
+                        "2 slices of Vinnie's Pizza (Pineapple veggie and Spare Rib Sweet Chilli sauce)",
+                        "24-hour lamb (cooked by Willie Harcourt-Cooze)",
+                        "3 Impossible Burgers",
+                        "3D printed chicken congee",
+                        "5 global tapas dishes: Thai red curry with brown rice; Yorkshire pudding with mashed potato, roast potato, stuffing, and gravy; buffalo cauliflower (from Paradise Palms, Edinburgh); cheese, spinach, and mushrooms with cream; fake fish tacos",
+                        "A bowl of Nigerian food: jollof rice and plantain or pounded yam and egusi",
+                        "A hearty salad with spanakopita",
+                        "A pyramid of expensive, humdinger lamb-mince scotcheggs (made by Tubsey & Hyder), one from the Gloucestershire pub and the black pudding one that Ed mentioned",
+                        "A schnitzel (nice and thin)",
+                        "A three bird roast Christmas dinner",
+                        "A vegan Ethiopian meal, all in one, on injera, and to have never tasted it before",
+                        "Ainsley's pasta cream bean dream",
+                        "Alligator and shrimp cheesecake (from Jacques-Imo's)",
+                        "Ambrosia burger",
+                        "Angel hair pasta with prego tomato sauce, Italian sausage and powdered parmesan",
+                        "Arrabiata Capellini",
+                        "Bangkok Stir-Fry from Salad King in Toronto",
+                        "Barbecue (manned by Rodney Scott) and Ethiopian raw beef (cut up by Marco Pierre White)",
+                        "Barbecue chicken",
+                        "Barbecue meat tray (Double beef brisket, pork belly, beef ribs, cauliflower shawarma, pickles and cornbread), with Pappy Van Winkle's bourbon",
+                        "Barbecue seafood platter (Lobster, giant prawns and squid) with garlic butter",
+                        "Barbeque plate",
+                        "Bastard cake",
+                        "Beef Wellington (from Ron Gastrobar in Amsterdam), with sour beer",
+                        "Beef Wellington with potato mash, tenderstem broccoli, and red wine gravy",
+                        "Beef rolls, dumplings and noodle soup (from Mr Dragon Noodle House)",
+                        "Beef skirt pasty made by Dawn's mother. Christmas meal: Christmas Eve beans on toast with Marmite, grated cheese and salad cream",
+                        "Beef tacos (from La Taqueria in San Francisco)",
+                        "Beef tartare",
+                        "Beef wellington for two from Ron's Gastro Bar and a pint of Timothy Taylor IPA from The Stuff of Life in Todmorden.",
+                        "Beef, with a piece from every part of the carcass (except the balls), cooked medium-rare for most parts and rare for the heart",
+                        "Berliner Leber and cabbage from the German Christmas market",
+                        "Biangbiang noodles from Xi'an Impression",
+                        "Big load of BBQ food, all the meats",
+                        "Birthday sushi",
+                        "Boxty",
+                        "Branzino, with angel hair pasta and olive cream sauce",
+                        "Breakfast sushi chirashi (tuna, salmon, yellow-tail, uni, tamago and scallop)",
+                        "Brick chicken",
+                        "Broccoli pasta made by his daughter",
+                        "Burrito from Gordo's",
+                        "Caramelised mock chicken from Tien hiang",
+                        "Caribbean oxtail with Nigerian Party Jollof, salad and coleslaw",
+                        "Cauliflower taco bowl",
+                        "Char kway teow",
+                        "Charred octopus (from L'artusi)",
+                        "Cheeseburger in a Krispy Kreme bun (from Original Patty Men)",
+                        "Cheeseburger with string fries (from The Spotted Pig), Porterhouse steak (Chicago style), Melanzane parmigiana, Chicken burrito with guacamole (for the table)",
+                        "Chicken Xacuti with plain rice",
+                        "Chicken chow mein (from the Bristol restaurant)",
+                        "Chicken enchiladas with tomatillo sauce",
+                        "Chicken kebab, chips and burger sauce and cheeseburger from Ossett Best Kebab",
+                        "Chicken korma with rice",
+                        "Chicken shawarma in pitta with salad, tahini, pickles",
+                        "Chicken thai curry",
+                        "Chicken wings from Shack Fuyu, square of lasagne made by housemate, pork bao buns, shredded seaweed from Bao, a little cup of pork ramen from the film Ponyo",
+                        "Chickpea and potato curry",
+                        "Chilli with cornbread",
+                        "Chips and curry sauce",
+                        "Christmas dinner",
+                        "Christmas dinner roast, which includes dry lamb, gravy, minty Yorkshire, rice, leftover Chinese takeaway, pigs in blankets, a meatball, a stuffed vine leaf, carrots, parsnips, peas, sweetcorn, green beans, roast potatoes, hot pepper sauce, sloppy stuffing and half a raw onion",
+                        "Christmas dinner without vegetables (from the 1970s or 1980s)",
+                        "Confit duck",
+                        "Confit duck leg with dauphinoise potatoes, honey roast carrots and parsnips",
+                        "Corned beef pie cooked by her mum",
+                        "Crispy duck pancakes. Christmas meal: Turkey, chicken, Brussels sprouts, long pigs in blankets like they're in tacos",
+                        "Curry (unspecified but Chicken Bhuna or Chicken Jalfrezi) and rice",
+                        "Dad's honey glazed pork (that gets her parents back together)",
+                        "Dandan noodles, beef roll, pork potstickers, and pea shoots (from Pine & Crane, Los Angeles)",
+                        "Dim sum: king prawn, pork, seaweed, salt beef croquettes, sweet and sour squid (from London Chinatown)",
+                        "Domino's large stuffed crust with pineapple, olives, jalapenos, Parma ham (not from Domino's), and garlic and herb dip",
+                        "Eel, killed in the Blood Hut, on rice with barbecue sauce",
+                        "Egusi stew, tomato stew with ground rice",
+                        "Eight to ten home made tacos, heavy on dairy and a little bowl of spaghetti Bolognese",
+                        "Elbow macaroni with brown stewed chicken",
+                        "Ewa riro with caramelised plantain",
+                        "Filet steak (medium-well) with Peppercorn Steak (from Hawksmoor)",
+                        "Fillet steak, cooked medium, with a peppercorn sauce (any disapproval from the staff about his steak's doneness and he walks out). Served with a demi-clock of onion rings, creamed spinach, a jar of pesto with a spoon, macaroni and cheese, and a red Thai chicken curry.",
+                        "Fish and chips (from Fission Chips in St Agnes)",
+                        "Fish and chips with mushy peas, gravy and curry sauce",
+                        "Fish head hot pot from Pang Pang",
+                        "Foul with Cambodian/French bread (from Café Selam)",
+                        "Four East End Pies (flipped upside down) with liquor and vinegar",
+                        "Four and twenty blackbirds baked in a pie",
+                        "French dip sandwich from Houston's",
+                        "Fresh fish with chips and salad from a Crete restaurant that never be found again",
+                        "Fried chicken burger with slaw, chipotle mayo in a potato bun with curly fries",
+                        "Full English breakfast (two sausages, two eggs, two/three bacon, black pudding, tinned tomatoes, hash browns)",
+                        "Garlic shrimp from Gardens of Taxco",
+                        "Gary Delaney's Roast chicken and roast potatoes with Sarah's yorkshire puddings and KFC gravy",
+                        "Giant Yorkshire pudding filled with tarragon mash, roast chicken, honey roast turnips and broccoli with seaweed sprinkled on top (from the unknown restaurant on the roundabout)",
+                        "Goat tacos (from Maurepas Foods, New Orleans)",
+                        "Goose and Coke-soaked ham Christmas dinner",
+                        "Grandma's corned beef hash in a giant Yorkshire pudding",
+                        "Grandmother's Biriyani",
+                        "Grandmother's Haleem",
+                        "Granny’s braising steak (in the style of Prague goulash)",
+                        "Green curry (from Thailand trek)",
+                        "Grilled aubergine, spinach, walnut and pine nut pasta",
+                        "Grilled miso aubergine bao (from Flesh & Buns)",
+                        "Gutbuster burger (from Man Vs Food in Heathrow)",
+                        "Had a second starter instead",
+                        "Harry’s Singapore chilli mud crab",
+                        "Her mum's Ogbono soup from Nigeria",
+                        "His own spaghetti Bolognese",
+                        "Hot pot from Haidilao served by a robot",
+                        "Ian Simpson's surf n turf",
+                        "Iberico char siu pork with rice",
+                        "Icing from a wedding cake",
+                        "Indian lamb shank (from Gaylord in London)",
+                        "Jalfrezi with toasted bread and butter and ketchup",
+                        "Japanese small plates (from Philadelphia)",
+                        "Johnny's thin crust pizza",
+                        "Jollof rice and egusi (from cousin's restaurant Red Chilli in Accra)",
+                        "Katsu chicken curry with rice (extra spicy 5/5)",
+                        "Lamb Madras with mushroom rice",
+                        "Lamb from Marrakech",
+                        "Lamb madras",
+                        "Lamb madras, poppadoms, onion bhaji, steamed rice from Malik's, ice-cold Pepsi in a glass bottle from Uganda",
+                        "Lamb roast with gravy, horseradish (instead of mint sauce), roast potatoes and cauliflower cheese",
+                        "Lamb with herby sauce and chimichurri with cheesy leeks, goose fat chips and a bowl of rocket from The Devonshire, London. With a Clarified Bloody Mary from First Aid Box, London",
+                        "Lamprais, Ed gets Biriyani",
+                        "Linguine with pesto and pine nuts",
+                        "Lobster (from Burger & Lobster, London)",
+                        "Lobster roll",
+                        "Lobster tail spaghetti",
+                        "Love Burger from Leon",
+                        "Main",
+                        "Make her own spaghetti Bolognese with loads of parmesan, loads of tomato with a blob of mayonnaise on at the end.",
+                        "Malatang, top-level spice, rice noodles, Chinese savoury doughnuts, veg, eggs, lotus root",
+                        "Malay curry",
+                        "Meatloaf with mash, green beans, and creamy gravy on the airplane coming back from America",
+                        "Medium ham pizza on a 'Meadsy' base",
+                        "Medium rare butler's steak with chips and poulet au champagne",
+                        "Medium ribeye steak with the bone in",
+                        "Medium-rare prime rib steak roti curry",
+                        "Melvin's burger",
+                        "Mince and tatties with mushroom sauce",
+                        "Miso ramen from Hare & Tortoise",
+                        "Mixed grill (baby lamb chops with mint jelly, T Bone steak (half inch), horseradish, rota chicken with lemon, yorkshire pudding, gravy, peas, Brussels sprouts, garlic mash, rosemary roast potatoes)",
+                        "Miyan Taushe with ground rice",
+                        "Mothers lasagna bolognese with soft red wine",
+                        "Moules frites with a cold lager",
+                        "Moussaka from the Venus Greek taverna",
+                        "Mum's Rapid Ragù after a rugby match, with a cut on the face",
+                        "Mum's Saturday soup",
+                        "Mum's cooking: White rice, Soya curry, Aubergine curry, Yellow Dahl, Masala dosa",
+                        "Mum's lamb madras with crinkled poppadoms on top",
+                        "Mum's roast beef Yorkshire puddings, roast potatoes, green veg, gravy",
+                        "Mushroom and asparagus risotto, with a variety of wild mushrooms and plenty of cheese (45 minute break to be taken beforehand to let antipasti go down, to watch the Angela Rippon episode of Morecambe and Wise)",
+                        "Mutton barbacoa with shaved slaw",
+                        "Nasi goring with chicken satay made by the 200-year-old woman",
+                        "Nigerian jollof rice with assam goat meat, porridge yam, puff puff, plantain",
+                        "Okra curry with cauliflower, red peppers, yellow peppers and chickpeas (no spice)",
+                        "Okra soup",
+                        "Oxtail roast and peas",
+                        "Oxtail stew with chicken shashlik",
+                        "Pad Thai (from boxing school in Thailand)",
+                        "Padana pizza leggera style from Pizza Cat",
+                        "Pan-fried sea bass in chilli oil made by herself with Kath's continental potatoes",
+                        "Pan-fried sea bass, with crispy skin (from The Ivy, Bath)",
+                        "Pasta pomodoro from the Italian restaurant in Nara, Japan with parmesan grated by herself",
+                        "Pasta with pistacio cream and shrimp",
+                        "Pasta with tomato, basil, and parmesan",
+                        "Pasta: Orecchiette alla barese and a glass of bang average white wine Main: Big buttery turbot",
+                        "Pastrami on rye with sauerkraut and dressing from Kat'z Deli, New York, and a side of seafood chowder from Holiday Inn, Belfast",
+                        "Peas, sprouts, red cabbage, apple, courgette, gluten-free gravy",
+                        "Penne pasta in tomato sauce with assorted meats and something fishy",
+                        "Penne pasta with pesto, boursin, frankfurter and cheddar. Jamie Olivers Pork Roll as an additional main course",
+                        "Pesto Linguine with Garlic bread with Cheese",
+                        "Pick e pepe and Pipistrelli di halloween",
+                        "Pizza (from Purezza)",
+                        "Platter of tacos from all the worlds best taco places (including 777, Masa, Wee Man’s van and one to have the deep fried broccoli from Dirt Candy)",
+                        "Ploughman's lunch (with cheddar and stilton, no celery)",
+                        "Pork belly with Celeriac mash",
+                        "Pork roast dinner with cauliflower & broccoli cheese, roast potatoes, carrots, Paxo, pork jus gravy, gratin dauphinoise, yorkshire pudding Zilch",
+                        "Pudding and souse with breadfruit",
+                        "Quinoa pasta with sauteed vegetables and marinated tofu",
+                        "Quite rare fillet steak with tenderstem broccoli and brussel sprouts",
+                        "Red Leicester, Shropshire Blue, Brie, Boursin, Dairylea, sprouts, broad beans, runner beans, cauliflower and a salad",
+                        "Red red cooked by any auntie",
+                        "Rigatoni with Beef Ragu",
+                        "Risotto with poached salmon and mussels from 24 Le Restaurant in Paris",
+                        "Roast Chicken",
+                        "Roast chicken",
+                        "Roast chicken cooked by her husband, roast potatoes, honeyroast carrots, Yorkshire pud, gravy, mum's boiled carrots, and broccoli",
+                        "Roast chicken dinner with stuffing, parsnips and gravy",
+                        "Roast chicken with sage and onion stuffing",
+                        "Roast leg of welsh lamb with gravy, parsnips, carrots, swede mash, roast potatoes and Yorkshire puddings",
+                        "Roast pork with crackling, apple sauce, roast potatoes, parsnips, Brussels sprouts, pigs in blankets, loads of gravy, all inside a giant Yorkshire pudding",
+                        "Roast potatoes, roast parsnips, honey glazed carrots. With a chicken in the shape of a baby. A whiskey that's too expensive and makes your head feel like a wind turbine",
+                        "Robbie Williams' Stoke-on-Trent mystery wrap (likely a Staffordshire oatcake)",
+                        "Rotisserie chicken",
+                        "Salmon with maple and ginger glaze",
+                        "Salt-baked chicken with chicken rice (from Hoi Wan Vegetarian Restaurant in Hong Kong)",
+                        "Saltfish rendang curry, whole seabass, chilli and salt pork chops, tofu with mashed prawn, morning glory, bok choy broth, and fluffy rice",
+                        "Sausage and chips with chef ketchup (from the Skibereen old folk's home)",
+                        "Sausage, chips, and baked beans with cheese on top (from the school canteen at Castle School, Thornbury)",
+                        "Schwartz's salt beef sandwich (lean) with pickles. Cheese course - A full wheel of 'The Cheese' (Maryland Farm mature cheddar)",
+                        "Sea bass",
+                        "Sea bass with steamed greens, spinach with nutmeg, green beans, Tenderstem broccoli, dauphinoise potatoes and a 50p-sized disk of steak with English mustard",
+                        "Seafood Paella (from Barcelona beach restaurant)",
+                        "Seafood boil (crab legs, king prawns, potatoes, corn on the cob, lashes of sauce. No 'sausige')",
+                        "Selection of spicy curries, tikka masala, peshwari and garlic naan, pilaf rice and poppadoms with all the dips and lashings of onion salad",
+                        "Shadow: pork shoulder, Main: fillet steak medium rare",
+                        "Sierra Leonean Jollof rice",
+                        "Slow cooked carnitas tacos with guacamole, black beans and pico de gallo from Guisados",
+                        "Slow roast belly of pork, bubbly crackling, roast potatoes, Dutchman's dicks (carrots), gravy, apple sauce, Yorkshire pudding",
+                        "Slow-cooked lamb",
+                        "Soft-shelled crab (Sichuan style) from Hutong Restaurant in Hong Kong",
+                        "Soup: chicken soup with matzah balls",
+                        "Southern American Mac and Cheese",
+                        "Southern Indian curry (possibly beetroot)",
+                        "Souvlaki",
+                        "Soy broth ramen from Yokohama",
+                        "Spaghetti Bolognese (only eating a quarter or a third)",
+                        "Spaghetti Bolognese with an offensive amount of pasta, cooked by his mum",
+                        "Spaghetti alle vongole",
+                        "Spaghetti alle vongole (with a limoncello)",
+                        "Spaghetti carbonara",
+                        "Spaghetti carbonara from Florence",
+                        "Spaghetti carbonara with parmesan from Puglia (with a Pipistrelli di Halloween)",
+                        "Spare ribs (from Louis' in South Harrow)",
+                        "Spinach and prawn linguine with white wine sauce",
+                        "Steak and kidney pudding with chips and gravy (from the Oldham chip shop)",
+                        "Steak pudding and chips and mushy peas, red cabbage and gravy with a fizzy Vimto from Olympus fish an chip restaurant, Bolton",
+                        "Steak tartare",
+                        "Steak, medium rare, with mashed potato and Brussels sprouts",
+                        "Stifado stew with chips in it in the big ceramic bowl. Plus granny's Christmas Day goose, Dad's confit duck, both on mashed potato served with red cabbage with raisens and gravy.",
+                        "Stinky beef with all the normal trimmings, cauliflower, cheese sauce, roast sprouts with parmesan and balsamic",
+                        "Stolen mac and cheese with crispy onions",
+                        "Surf and turf: rump steak, calamari, and prawns (from Blues Kitchen, Shoreditch)",
+                        "Surf and turf: venison and lobster",
+                        "Sweet potato and kale hash with Pico hot sauce, cilantro and vegan cheese",
+                        "Tagine with lamb chops and okra (with round Moroccan bread)",
+                        "Tapas every dish (patatas bravas, little bit of bread with tomato, lots of seafood, octopus, sardines, meatballs, chorizo, all the hams, all the cheeses and mushroom croquetas.) (Surprise salt and vinegar discos)",
+                        "Tempura Dover sole from Lampara",
+                        "Teppanyaki Grill (cooked by Stewart Lee and Mariah Carey)",
+                        "Thai red duck curry",
+                        "Tiger prawn curry with basmati rice and homemade yoghurt",
+                        "Tripe, samp and beans",
+                        "Tuna steak on lentils with spaghetti aglio e olio",
+                        "USDA Prime Dry Aged 35 Medium Rare Plus Steak",
+                        "Vegan bibimbap (from Kimchi Cult)",
+                        "Vegan kebab (from the place on Holloway Road)",
+                        "Vegetable Lasagne",
+                        "Veggie burger from Houston's in Memphis",
+                        "Very hot prawn vindaloo with real chillies, poppadoms, pilau rice and raita",
+                        "Very small margherita pizza (from Grimaldi's Pizzeria)",
+                        "Vodka rigatoni from Bertie Blossoms",
+                        "Wagyu beef burger (from Flat Iron) with steak and truffle parmesan fries",
+                        "Wagyu fillet steak, quite rare, with popadom-flavoured cherry cola sauce",
+                        "Wat tan hor",
+                        "What they're having",
+                        "chicken in yoghurt, rice, moong dal, pumpkin in yoghurt, from Afghan Kitchen",
+                        "skate wing tacos from Kohl and a frozen yuzu margarita from Shak Fu Yu",
+                        "‘Curry feast night’ crab, chicken, paneer (with beers, posh and slag)"
+            ],
+            "dessert": [
+                        "'Ro-Mess Mango-nathan'",
+                        "(Surprise nice n spicy nik naks)",
+                        "1 scoop of grapefruit sorbet and 1 scoop of watermelon sorbet with boozy fruit",
+                        "1980's school chocolate pudding (served by Edie, her dinner lady)",
+                        "2 Mars ice creams",
+                        "3 scoops of Ben & Jerry's: chocolate fudge brownie, peanut butter cup and a cookie one",
+                        "A Cadbury chocolate dessert - Freddo is currently number one choice",
+                        "A Mars bar",
+                        "A bowl of honeycomb ice cream",
+                        "A bowl of stale Wotsits",
+                        "A cheeseboard with surprise Babybels that, when opened, there's really nice cheese in them with the fig chutney from the Avalon Christmas hamper with pink Lady apples, and a glass of port. Followed by Gaviscon chaser",
+                        "A chocolate fondant with ice-cream for herself. Crema Catalana for her husband. Husband then orders a surprise third one.",
+                        "A chocolate mousse, from Paris with Jarvis Cocker",
+                        "A crumble roulette, a crumble roulade, cream, a jug of molten chocolate, and a tap that dispenses custard",
+                        "A cup of tea and a Kitkat",
+                        "A giant pick and mix with Biggie Smalls in New York in the 90s, Fanta Frozen with a combination of the cherry and raspberry flavour",
+                        "A mango",
+                        "A massive sundae. Chocolate ice cream, peanut butter, cookies, brownies, nuts, salted cashews, loads of hot fudge sauce",
+                        "A mouthful of someone else's pudding",
+                        "A nobbly bobbly and a fortune cookie",
+                        "A novelty bar of Cadbury Dairy Milk",
+                        "A pumpkin pie with vanilla ice cream from House of Pies",
+                        "A pyramid of Ferrero Rocher and an Exotic Sandwich",
+                        "A skillet of half-baked cookie dough, with a chocolate lava cake on top and double-cream poured over",
+                        "A slice of New York cheesecake",
+                        "A sliver of HB Ice Cream Romantica cake with some Vanilla Viennetta (left to chambre for 15 minutes)",
+                        "A souffle that changes with every single mouthful",
+                        "An afternoon tea without the sandwiches: mini Eton mess, a mini trifle, lemon meringue, bit of ice cream, Viennese whirl dipped in chocolate for Jules, with dry ice coming out of it.",
+                        "Angel Cake with fresh strawberries and raspberries",
+                        "Apple Crumble with custard and ice-cream at a Crumble Party",
+                        "Apple Strudel",
+                        "Apple and blackberry pie with double cream",
+                        "Apple crumble (with custard)",
+                        "Apple crumble with custard",
+                        "Apple crumble with ice cream",
+                        "Apple tart with vanilla ice cream (handmade by an old Irish woman)",
+                        "Apricot crumble with ice cream (Cheeseboard afterwards)",
+                        "Assiette of desserts, tiramisu, lemon meringue, chocolate mousse, pistachio cannoli, Terry's Chocolate Orange, and a black coffee",
+                        "Açaí na tigela",
+                        "Baklava , a black Americano and a plain profiterole made by your mum with a massive load of hot chocolate",
+                        "Banoffee Pie",
+                        "Banoffee pie",
+                        "Banoffee pie and amaretto on the rocks",
+                        "Banoffee pie and miracle whip, a posh wagon wheel, and salted caramel, chocolate, raspberry ripple, and vanilla ice cream.",
+                        "Battered KitKat Chunky Peanut Butter with ice-cream",
+                        "Bella's pudding, likely butterscotch pudding",
+                        "Ben & Jerry's Caramel Chew Chew",
+                        "Berry bostock",
+                        "Big pastel de nata (ring the bell - Manteigaria, in Lisbon)",
+                        "Blonde Bombshell from Heritage cafe 1989",
+                        "Bluberry pie (from Becky's Cafe)",
+                        "Blueberry pie with a dollup of vanilla ice cream",
+                        "Boyfriend's chocolate cake and a scoop of vanilla ice cream",
+                        "Brioche bread pudding with currants, chocolate and whiskey (from the place in Manchester)",
+                        "Brûléed rice pudding with cardamon and macadamia nuts",
+                        "Build your own sundae",
+                        "Butterscotch sundae on a plane, with the Bridesmaids cast",
+                        "Carrot cake from his Dad's work",
+                        "Carrot cake, lemon meringue pie from Edwards, Shay's peach cobbler, and then some Johnny Walker Blue for everyone afterwards",
+                        "Cheese board",
+                        "Cheese board (Stinky, hard, cheddar bomb) and a glass of red wine",
+                        "Cheese board (blue, hard, soft, sheep's, goat's)",
+                        "Cheese board (cheddar, stilton, \"emmerdale\", \"manjengo\", babybel, blue cheese) on a floating pillow",
+                        "Cheese course: a St James' cheese with boozy prune and walnut cracker and honeycomb from The French. Pre-dessert: caviar popsicle from CODA. Dessert: lemon French toast with dolce de leche ice cream from ATARI. Petit fours: one packet of Smash from Scandinavia. Digestif: a pot of fresh mint leaf tea",
+                        "Cheese course: truffle Baron Bigod from L'Enclume. Pre-dessert: truffle cheese toastie with smoky campfire ice cream from Trois Mec. Dessert: olive oil ice cream from Quality Chophouse and Christmas pudding gelato from Gelupo. Digestif: a Fernet Branca Menta",
+                        "Cheeseboard (\"Adult cheese\", quince and savoury biscuits)",
+                        "Cheeseboard (Camembert, truffle brie, applewood and creamy gorgonzola with quince, chutney and some rosemary sprigs)",
+                        "Cheeseboard (blue stilton, grapes and some salty crackers) and a lemon sorbet (inside a lemon)",
+                        "Cheeseboard with quince paste and pickled walnuts (gorgonzola, comté, truffle brie)",
+                        "Cheesecake (50% crust)",
+                        "Cheesecake with candied ginger and lime zest (from Island Social Club)",
+                        "Choccy muffy delighty treaty (warm choc chip muffin with pistachio and hazelnut ice cream, crushed Malteasers Bunny on the top of it, and sparklers) and then bottle of Rioja with four rolled cigarettes by her friend Francis.",
+                        "Chocolate Guinness cake with Cherry Garcia Ben and Jerry's ice cream, with ice cream Chewits and strawberry Quality Street",
+                        "Chocolate Nemesis Cake with ice cream, a cheeseboard (quince jelly and whatever sounds good) and an Amaretto (with ice)",
+                        "Chocolate bombe (from The Ivy)",
+                        "Chocolate bombe with salted caramel ice cream and crumbed flake",
+                        "Chocolate lava cake with Madagascar vanilla ice-cream.",
+                        "Chocolate lava cake with caramel ice cream",
+                        "Chocolate lava cakes with Vanilla ice cream",
+                        "Chocolate molten lava cake",
+                        "Chocolate molten lava cake with Vanilla ice cream",
+                        "Chocolate steamed pudding with chocolate sauce (from E & O, Notting Hill)",
+                        "Chocolate éclair",
+                        "Christmas bread and butter pudding, a la Nigella Lawson with steaming hot custard",
+                        "Christmas pudding with brandy, ice cream, custard and caramel (every way)",
+                        "Christmas pudding with lychee sorbet",
+                        "Cinnamon Rolls",
+                        "Citrus-y cheesecake (non baked, biscuit base) with raspberry coulis",
+                        "Cold, dirty martini on arrival, Bulleit bourbon later on",
+                        "Crema catalana (from the European in Melbourne) with Campos coffee",
+                        "Creme Brulee",
+                        "Creole bread pudding soufflé",
+                        "Crème Brûlée",
+                        "Crème Brûlée with orange shortbread and raspberries",
+                        "Cupcake with chilled jasmine tea",
+                        "Custard and cake, Panda Pop, Limeade",
+                        "Deconstructed apple crumble with a custard foam and sponge sugar inside a chocolate sphere and smoke coming out of it, made by herself",
+                        "Deconstructed tiramisu, reconstructed, Paris-Brest, Sachertorte from Kipferl, peppermint and liquorice tea. Then twenty minute walk home, then a Happy Hippo an hour later",
+                        "Deep-fried Mars bar",
+                        "Dessert",
+                        "Dessert Sliders (Stollen, Dark Matters cherry brownie, Mum's Christmas cake with double marzipan and clotted cream) and vegan truffle camembert (from La Fauxmagerie)",
+                        "Dessert platter (Sticky toffee pudding with custard, Chocolate torte, Passion fruit pavlova, Bob Bob Ricard's strawberry and cream souflee)",
+                        "Diane’s chocolate orange cheesecake (on Christmas day)",
+                        "Diner chocolate cake with a cup of coffee",
+                        "Dinky Doughnuts (from Little Chef) and a 'jumbo dinky'",
+                        "Discontinued Häagen-Dazs Choc Choc Chip Ice Cream",
+                        "Dunbar Blizzard made by Simon at Dairy Queen. Followed by a shot of Mollort blue,",
+                        "English trifle",
+                        "Eton Mess",
+                        "Four madelines, an affogato with pistachio ice cream and a Fernet-Branca (from The French House)",
+                        "French Flan",
+                        "Freshly-made Percy Ingle sugar ring doughnut on a bed of Biscock rock ice cream from Romeov & Giulietta",
+                        "Frozen dark chocolate covered gummy bears served in a cookie cup",
+                        "Gary Rhodes' bread and butter pudding",
+                        "Gary Usher's Vanilla tart, a Vin Santo with madelines and a cheeseboard (from La Fromagerie)",
+                        "German chocolate cake",
+                        "Gluten-free brownie (from Café Gratitude)",
+                        "Grandmother's Lemon meringue pie",
+                        "Grandmother's Princess cake",
+                        "Gugelhupf",
+                        "Gummy candies sucked from a bag",
+                        "Gypsy tart with butterscotch Angel Delight as a sauce",
+                        "Gypsy tart with squirty cream",
+                        "Gü-Zillionaire's cheesecake",
+                        "Hazelnut and pecan tart",
+                        "Hazelnut roulade with raspberry coulis and vanilla ice cream",
+                        "Heavily crumbled apple crumble with ice cream on the side",
+                        "His Mums Coconut Poundcake with icing",
+                        "His mom's sponge roll with vanilla ice cream",
+                        "Homemade rhubarb crumble with custard, pouring cream, squirty cream and expensive vanilla ice cream",
+                        "Hot apple Crumble with single cream",
+                        "Hot jam doughnuts (from Australia)",
+                        "Hot sugary rock cake dough with Carte d'Or ice cream",
+                        "Ice \"cream\" cupcake sandwich (from Seasoned Vegan, Harlem)",
+                        "Ice cream three ways (99 with a flake, ice cream sundae from the movies with pain au chocolat nibs, affogato from left over Haagen-Dazs + half of tub of Haagen-Dazs cut with a bread knife) + glazed Krispy Kreme",
+                        "Japanese souffle pancakes with Biscoff from Hefaure, Trappist banana beer, Gammon and pineapple",
+                        "Japanese whisky",
+                        "Jean-Christophe Novelli's lemon tart",
+                        "Jelly with tangerine segments, like grandmother used to make",
+                        "Kedgeree, very curried",
+                        "Knickerbocker Glory from Florentini's, Derry",
+                        "Knickerbocker glory (from Berni Inn in 1982)",
+                        "Kuih",
+                        "Lemon Meringue Pie",
+                        "Lemon and coconut ice cream in a lemon shell",
+                        "Lemon sorbet (from a French café)",
+                        "Lemon tart",
+                        "Lime posset",
+                        "Little Chef's Mississippi mud cake (cold)",
+                        "M&S black forest gateau and it's your birthday",
+                        "Malva pudding",
+                        "Mango custard rolls (from One Dim Sum in Hong Kong)",
+                        "Matcha and green tea soft-serve ice-cream with French toast (from Shack Fu-Yu)",
+                        "McFlurry with McDonald's chips",
+                        "Microwaved chocolate fondant with two segments of Terry's Chocolate Orange stuck in the middle",
+                        "Mint Viennetta",
+                        "Mint chocolate chip vegan cornetto",
+                        "Mixed chocolate and banana crepe from La Crêperie de Hampstead, London.",
+                        "Mocha dacquoise, espresso martini with Crystal Head, a cigar, Mission Hill brandy and doughnuts in butter",
+                        "Mochi cake with strawberry inside (from Lawson)",
+                        "Molten chocolate cake with blackberry sauce with black pepper",
+                        "More poutine / Pecan Pie",
+                        "Mr Whippy with flake and strawberry sauce",
+                        "Mum's Baked Alaska and a cup of black tea",
+                        "Mum's apple pie, rose goat milk ice cream and a filter coffee with non-dairy milk",
+                        "Mum/nan’s trifle",
+                        "Mum’s (via great aunt Penny) lemon roulade with amaretto coffee",
+                        "Nan's lemon drizzle cake",
+                        "New Zealand Pinot Noir and Sauvignon Blanc",
+                        "Notarianni's vanilla and chocolate ice cream banana split and a cheeseboard",
+                        "Om Ali",
+                        "Oreo cheesecake",
+                        "Own, homemade pumpkin pie with single cream.",
+                        "Pakistani mango filled with mango sorbet",
+                        "Pancakes with bacon and maple syrup followed by 3 rennies at 4 in the morning",
+                        "Panettone bread and butter pudding with custard",
+                        "Pashka with kulich",
+                        "Pass (but then hours later a biscuit and raisin Yorkie duo from a newsagents)",
+                        "Passion fruit soufflé (from The Greenhouse) and a scoop of Murphy's sea salt ice cream",
+                        "Peach cobbler (from Jackson + Rye, London)",
+                        "Peanut butter shortbread with salted caramel ice cream and an Espresso Martini, ending with whiskey",
+                        "Pecan pie with vanilla bean ice cream (from Windowsill Pies)",
+                        "Perfect slice of cheesecake, a black coffee, sour Santas with Clodhoppers",
+                        "Pete's blueberry pavlova",
+                        "Pizza Hut salad (70% croutons, bacon bits, beetroot, Honey and Mustard dressing)",
+                        "Plain Vienetta",
+                        "Platter of Mississippi mud pie, Molten lava cake, Banoffee cheesecake (from Tesco) all covered in chocolate custard",
+                        "Platter of desserts (from Zuma): Melon boat, chocolate fondant with matcha filling, fruit sorbet (all infused with CBD)",
+                        "Pumpkin pie",
+                        "Red velvet cake",
+                        "Rhubarb four-ways from Hipping Hall",
+                        "Rice pudding with cinnamon",
+                        "Rice pudding with cinnamon and raisins and a mint tea",
+                        "Ruby Jewel mint ice cream sandwich",
+                        "Salad: Green salad with Romaine lettuce, endives and rocket with french dressing",
+                        "School dessert sponge with icing and hundreds and thousands on top and mint custard You can cram it forever",
+                        "Selection of ice creams and fruit (brought by Ivo Graham)",
+                        "Self invented trifle in a waffle bowl (marzipan, icing, Rolo yoghurt, custard, cream and hundreds & thousands)",
+                        "Shackfuyu French toast (for the table) and Chocolate and raspberry cake with salted caramel cream, chocolate ganache and fondant icing, with his mum's Peanut Butter Slice Cream, with salted caramel thick shake (from Sweet Mother's Kitchen), ending with a coffee kombucha and petit fours",
+                        "Shahi Tukray",
+                        "Sherry Trifle, with a dying pigeon encased in the jelly and sponge",
+                        "Slightly old pick n mix with a Willy Wonka teacup",
+                        "Snuck Black Forest gâteau (from the Black Forest)",
+                        "Soft-serve ice cream with chocolate sauce from McDonald's",
+                        "Special K with Oatly barista milk",
+                        "Spotted dick with custard",
+                        "Spumoni ice cream from Dan Tana's",
+                        "Sticky toffee pudding with hot custard",
+                        "Sticky toffee pudding with ice cream (with a limoncello)",
+                        "Sticky toffee pudding with ice-cream, followed by a cheese trolley",
+                        "Sticky toffee pudding with salted caramel ice cream and a glass of Muscat",
+                        "Sticky toffee pudding with vanilla ice cream (to start)",
+                        "Strawberry cheesecake",
+                        "Strawberry shortcake",
+                        "Sussex Pond Pudding",
+                        "Taiwanese pineapple cake and vegan ice cream from Dear Bella",
+                        "Tapioca but when the server comes out they do a Donald Trump impression, they go, 'You're fired.",
+                        "Tarte au citron (from Paul in London)",
+                        "Taste of the fairground",
+                        "Tequila Rose",
+                        "The Godfather Sundae (from Bella Pasta)",
+                        "The custard doughnut from Italy, digestif of Amaro",
+                        "The piece of shame",
+                        "Thin apple tart and Guinness punch ice cream from The Ivy",
+                        "Three tier cake stand with giant strawberries and white chocolate buttons, small piece of cheesecake, mum's apple crumble",
+                        "Tipsy cake (from Dinner by Heston, Knightsbridge)",
+                        "Tiramisu",
+                        "Tiramisu (someone's made love to)",
+                        "Tiramisu from hot Italian nephew",
+                        "Tiramisu from the Menier Chocolate Factory",
+                        "Tiramisu, an affogato with a lotus biscuit, espresso Martini, The Pret banana cake",
+                        "Toasted marshmallows with hot chocolate, melted chocolate dip and home-grown fruit (around the campfire)",
+                        "Toffee pie from school dinners served by the dinner lady with a mole on her face",
+                        "Tootsie Roll cheesecake",
+                        "Torta della nonna with coffee and cigars",
+                        "Treacle Tart with cold pouring cream",
+                        "Trifle",
+                        "Two Mr Kipling's apple pies and hot custard. Then, an old fashioned",
+                        "Vanilla icing iced vanilla cake served by Vanilla Ice",
+                        "Vegan Welsh cakes/melon with sherry",
+                        "Vegan donuts with raspberry and custard in from Crosstown Doughnuts",
+                        "Vegan eton mess",
+                        "Vegan ice cream or sorbet and then a coffee.",
+                        "Wall's Romantica with whipped cream and an after eight",
+                        "Warm chocolate brownie with nuts and a scoop of ice cream",
+                        "Warm chocolate fudge cake with pouring cream",
+                        "Watermelon Roll from Friendly's",
+                        "Wedding cake (chocolate, carrot, red velvet, Victoria sponge with blueberries)",
+                        "Welsh rarebit with Worcestershire sauce",
+                        "Wife's syrup sponge with custard",
+                        "Yellow cake (no baby Jesus)",
+                        "Yeo valley yogurt with chopped banana and muscovado sugar",
+                        "either no dessert, or every dessert in the world",
+                        "hot chocolate sponge with mint sauce",
+                        "ice cream sundae and has toasted rice gelato from Superiority Burger, Wendy's Frosty, the hot fudge sauce, a Marksman brown butter custard tart crumbled over it and Happy Endings ice cream sandwich, the malted one jammed in there. Served with custardo from Forza Win",
+                        "kardemummabullar",
+                        "lemon meringue pie from near Las Arena in Chile with a glass of Chilean champagne to toast the moon",
+                        "marigold custard,bblueberries, pollen and honey from Amass in Copenhagen. Bramley apple apple soufflé, salted caramel and ice cream from The Sportsman. Own homemade pavlova. Raspberry and pistachio frangipane from Mamie Gâteaux in Paris. An Italian hot chocolate. Petit fours of the homemade Rolos from Hawksmoor. Pierre Hermé macarons.",
+                        "pre-dessert: brulee pecorino. Then, a mouthful of everyone else's dessert and a digestif of mint Fernet-Branca",
+                        "rhubarb crumble with rhubarb ice cream followed by a cheese board with Gouda, Stilton, Mont d'Or",
+                        "£1 of lemon sherbet with the babysitter"
+            ]
+};
+
+        // Note: The full data would be embedded here, but truncated for brevity
+        // You would include all the menu data from menuData.json
+
+        function populateDataLists() {
+            // Populate water options
+            const waterList = document.getElementById('waterList');
+            menuData.water.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                waterList.appendChild(option);
+            });
+
+            // Populate bread options
+            const breadList = document.getElementById('breadList');
+            menuData.bread.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                breadList.appendChild(option);
+            });
+
+            // Populate starter options
+            const starterList = document.getElementById('starterList');
+            menuData.starter.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                starterList.appendChild(option);
+            });
+
+            // Populate main options
+            const mainList = document.getElementById('mainList');
+            menuData.main.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                mainList.appendChild(option);
+            });
+
+            // Populate dessert options
+            const dessertList = document.getElementById('dessertList');
+            menuData.dessert.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                dessertList.appendChild(option);
+            });
+        }
+
+        // Initialize the page
+        populateDataLists();
+
+        // Add visual feedback when inputs are filled
+        const inputs = document.querySelectorAll('input[type="text"]');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.classList.add('filled');
+                } else {
+                    this.classList.remove('filled');
+                }
+            });
+        });
+
+        // Handle form submission
+        document.getElementById('dreamMealForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const water = document.getElementById('water').value.trim();
+            const bread = document.getElementById('bread').value.trim();
+            const starter = document.getElementById('starter').value.trim();
+            const main = document.getElementById('main').value.trim();
+            const dessert = document.getElementById('dessert').value.trim();
+
+            // Check if all fields are filled
+            if (!water || !bread || !starter || !main || !dessert) {
+                showMessage('⚠️ Please fill in all fields!', 'error');
+                return;
+            }
+
+            // Validate that entries match the available options (case-insensitive)
+            const validateChoice = (value, choices, fieldName) => {
+                const normalized = choices.map(c => c.toLowerCase());
+                if (!normalized.includes(value.toLowerCase())) {
+                    showMessage(`⚠️ "${value}" is not a valid ${fieldName}. Please choose from the list.`, 'error');
+                    return false;
+                }
+                return true;
+            };
+
+            if (!validateChoice(water, menuData.water, 'water choice')) return;
+            if (!validateChoice(bread, menuData.bread, 'bread choice')) return;
+            if (!validateChoice(starter, menuData.starter, 'starter')) return;
+            if (!validateChoice(main, menuData.main, 'main')) return;
+            if (!validateChoice(dessert, menuData.dessert, 'dessert')) return;
+
+            // Check for the correct combination (case-insensitive)
+            const correctWater = "Still (from babbling French brook diverted to the dream restaurant under a full moon)";
+            const correctBread = "Unexpectedly hot roll with butter";
+            const correctStarter = "Ham and cheese toastie";
+            const correctMain = "Vodka rigatoni from Bertie Blossoms";
+            const correctDessert = "Wife's syrup sponge with custard";
+
+            const isCorrect =
+                water.toLowerCase() === correctWater.toLowerCase() &&
+                bread.toLowerCase() === correctBread.toLowerCase() &&
+                starter.toLowerCase() === correctStarter.toLowerCase() &&
+                main.toLowerCase() === correctMain.toLowerCase() &&
+                dessert.toLowerCase() === correctDessert.toLowerCase();
+
+            if (isCorrect) {
+                showMessage('🎉 Ahh, the perfect meal! For your next clue, look behind the nativity!', 'success');
+            } else {
+                showMessage('❌ Sorry, this is not a perfect meal. Try again!', 'error');
+            }
+        });
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
