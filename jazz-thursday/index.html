@@ -194,6 +194,10 @@
             flex-wrap: wrap;
         }
 
+        .controls.hidden {
+            display: none;
+        }
+
         button {
             background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
             color: white;
@@ -301,12 +305,10 @@
             Score: <span class="correct">0</span> / <span class="total">12</span> correct
         </div>
 
-        <div class="controls">
+        <div class="controls hidden" id="hintControls">
             <button class="hint-button" id="hintBtn" onclick="useHint()">
                 🎁 Get +0.5s Bonus (2 remaining)
             </button>
-            <button onclick="checkAnswers()">Check Answers</button>
-            <button onclick="clearAll()">Clear All</button>
         </div>
 
         <div id="songsContainer">
@@ -565,27 +567,13 @@
             let correct = 0;
 
             for (let i = 1; i <= 12; i++) {
-                if (userAnswers[i] === correctAnswers[i]) {
-                    correct++;
-                }
-            }
-
-            correctCount = correct;
-            maxPlayTime = 1 + (correctCount * 0.5); // 0 correct = 1 sec, 1 correct = 1.5 sec, 2 correct = 2 sec, etc.
-
-            updateScore();
-            updateTimeDisplay();
-        }
-
-        // Check answers and show visual feedback
-        function checkAnswers() {
-            for (let i = 1; i <= 12; i++) {
                 const songDiv = document.getElementById(`song-${i}`);
                 const status = document.getElementById(`status-${i}`);
                 const userAnswer = userAnswers[i];
                 const correctAnswer = correctAnswers[i];
 
                 if (userAnswer === correctAnswer) {
+                    correct++;
                     songDiv.classList.add('correct');
                     songDiv.classList.remove('incorrect');
                     status.textContent = '✓ Correct';
@@ -603,33 +591,27 @@
                 }
             }
 
+            correctCount = correct;
+            maxPlayTime = 1 + (correctCount * 0.5); // 0 correct = 1 sec, 1 correct = 1.5 sec, 2 correct = 2 sec, etc.
+
+            updateScore();
+            updateTimeDisplay();
+            updateHintVisibility();
+
+            // Check if all correct
             if (correctCount === 12) {
                 document.getElementById('successMessage').classList.add('show');
             }
         }
 
-        // Clear all answers
-        function clearAll() {
-            userAnswers = {};
-            correctCount = 0;
-            maxPlayTime = 1;
-            hintsUsed = 0;
-
-            for (let i = 1; i <= 12; i++) {
-                const input = document.getElementById(`input-${i}`);
-                input.value = '';
-
-                const songDiv = document.getElementById(`song-${i}`);
-                songDiv.classList.remove('correct', 'incorrect');
-
-                const status = document.getElementById(`status-${i}`);
-                status.style.display = 'none';
+        // Show/hide hint button based on correct answers
+        function updateHintVisibility() {
+            const hintControls = document.getElementById('hintControls');
+            if (correctCount >= 6 && hintsUsed < maxHints) {
+                hintControls.classList.remove('hidden');
+            } else if (correctCount < 6) {
+                hintControls.classList.add('hidden');
             }
-
-            updateScore();
-            updateTimeDisplay();
-            updateHintButton();
-            document.getElementById('successMessage').classList.remove('show');
         }
 
         // Update score display
@@ -651,6 +633,7 @@
                 maxPlayTime += 0.5;
                 updateTimeDisplay();
                 updateHintButton();
+                updateHintVisibility();
             }
         }
 
@@ -664,6 +647,8 @@
             } else {
                 hintBtn.textContent = '🎁 No Bonuses Left';
                 hintBtn.disabled = true;
+                // Keep it visible but disabled
+                document.getElementById('hintControls').classList.remove('hidden');
             }
         }
 
