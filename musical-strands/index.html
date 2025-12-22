@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Strands - Landon's Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: #ffffff;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            padding: 30px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #121212;
+            font-size: 36px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+
+        .note-cell {
+            aspect-ratio: 1;
+            background: #f7f7f7;
+            border: 2px solid #dfdfdf;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #121212;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            position: relative;
+        }
+
+        .note-cell:hover:not(.found) {
+            background: #ebebeb;
+            border-color: #c8c8c8;
+            transform: scale(1.05);
+        }
+
+        .note-cell.selected {
+            background: #5a594e;
+            color: white;
+            border-color: #5a594e;
+        }
+
+        .note-cell.found {
+            cursor: default;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* Different colors for different found groups - NYT Strands inspired palette */
+        .note-cell.found.color-0 { background: #b6a6ca; border-color: #b6a6ca; }
+        .note-cell.found.color-1 { background: #88b3ce; border-color: #88b3ce; }
+        .note-cell.found.color-2 { background: #f4c095; border-color: #f4c095; }
+        .note-cell.found.color-3 { background: #e7b8a5; border-color: #e7b8a5; }
+        .note-cell.found.color-4 { background: #a8c99c; border-color: #a8c99c; }
+        .note-cell.found.color-5 { background: #c9ada7; border-color: #c9ada7; }
+        .note-cell.found.color-6 { background: #9fa9cf; border-color: #9fa9cf; }
+        .note-cell.found.color-7 { background: #b8d4d4; border-color: #b8d4d4; }
+        .note-cell.found.color-8 { background: #d4a5c4; border-color: #d4a5c4; }
+        .note-cell.found.color-9 { background: #e8c5a5; border-color: #e8c5a5; }
+
+        /* Spangram special style */
+        .note-cell.spangram {
+            background: #f9df6d;
+            border-color: #f9df6d;
+            color: #121212;
+            font-weight: 700;
+        }
+
+        .found-keys {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            min-height: 80px;
+        }
+
+        .found-keys h3 {
+            color: #121212;
+            margin-bottom: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .key-chip {
+            display: inline-block;
+            color: white;
+            padding: 8px 16px;
+            margin: 4px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .key-chip.color-0 { background: #b6a6ca; }
+        .key-chip.color-1 { background: #88b3ce; }
+        .key-chip.color-2 { background: #f4c095; }
+        .key-chip.color-3 { background: #e7b8a5; }
+        .key-chip.color-4 { background: #a8c99c; }
+        .key-chip.color-5 { background: #c9ada7; }
+        .key-chip.color-6 { background: #9fa9cf; }
+        .key-chip.color-7 { background: #b8d4d4; }
+        .key-chip.color-8 { background: #d4a5c4; }
+        .key-chip.color-9 { background: #e8c5a5; }
+
+        .key-chip.spangram {
+            background: #f9df6d;
+            color: #121212;
+            font-weight: 700;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        button {
+            background: #121212;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        button:hover {
+            background: #2a2a2a;
+            transform: scale(1.02);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.clear {
+            background: #e0e0e0;
+            color: #121212;
+        }
+
+        button.clear:hover {
+            background: #d0d0d0;
+        }
+
+        button:disabled {
+            background: #e8e8e8;
+            color: #a0a0a0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            background: #f9df6d;
+            color: #121212;
+            padding: 28px;
+            border-radius: 16px;
+            margin-top: 25px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            display: none;
+            animation: slideIn 0.4s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        .grid-wrapper {
+            position: relative;
+            margin: 20px auto;
+            max-width: 550px;
+        }
+
+        #connectionCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .grid-container {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Keyboard Image */
+        .keyboard-image {
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .keyboard-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Musical Strands</h1>
+
+        <div class="keyboard-image">
+            <img src="keyboard.png" alt="Piano Keyboard">
+        </div>
+
+        <div class="grid-wrapper">
+            <canvas id="connectionCanvas"></canvas>
+            <div class="grid-container" id="grid"></div>
+        </div>
+
+        <div class="controls">
+            <button class="clear" id="clearBtn">Deselect</button>
+        </div>
+
+        <div class="found-keys">
+            <h3>Found: <span id="foundCount">0</span> / <span id="totalCount">11</span></h3>
+            <div id="foundList"></div>
+        </div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // Grid with musical notes - 8 rows x 6 columns (48 cells)
+        // Contains: 10 minor chords and spangram "MINORCHORDS"
+
+        const gridLayout = [
+            ['F',  'E♭', 'B',  'C',  'D#', 'B'],     // Row 0: indices 0-5
+            ['A♭', 'C',  'D',  'F#', 'A',  'G#'],    // Row 1: indices 6-11
+            ['E♭', 'G',  'H',  'C',  'A',  'F'],     // Row 2: indices 12-17
+            ['C',  'O',  'F#', 'R',  'C#', 'D'],     // Row 3: indices 18-23
+            ['R',  'A',  'C#', 'O',  'N',  'I'],     // Row 4: indices 24-29
+            ['E',  'D',  'A',  'A#', 'C#', 'M'],     // Row 5: indices 30-35
+            ['G',  'S',  'F#', 'C',  'D',  'E#'],    // Row 6: indices 36-41
+            ['B',  'D',  'G',  'E',  'B♭', 'G'],     // Row 7: indices 42-47
+        ];
+
+        // Define patterns with their winding paths through the grid (all verified adjacent)
+        const patterns = {
+            'F Minor 7': {
+                notes: ['F', 'E♭', 'A♭', 'C'],
+                indices: [0, 1, 6, 7],
+                color: 0,
+                isSpangram: false
+            },
+            'B Minor 9': {
+                notes: ['B', 'D', 'F#', 'A', 'C#'],
+                indices: [2, 8, 9, 16, 22],
+                color: 1,
+                isSpangram: false
+            },
+            'D Minor 7': {
+                notes: ['C', 'A', 'F', 'D'],
+                indices: [3, 10, 17, 23],
+                color: 2,
+                isSpangram: false
+            },
+            'G# Minor': {
+                notes: ['D#', 'B', 'G#'],
+                indices: [4, 5, 11],
+                color: 3,
+                isSpangram: false
+            },
+            'C Minor': {
+                notes: ['E♭', 'G', 'C'],
+                indices: [12, 13, 18],
+                color: 4,
+                isSpangram: false
+            },
+            'F# Minor': {
+                notes: ['F#', 'A', 'C#'],
+                indices: [20, 25, 26],
+                color: 5,
+                isSpangram: false
+            },
+            'E Minor 9': {
+                notes: ['E', 'G', 'B', 'D', 'F#'],
+                indices: [30, 36, 42, 43, 38],
+                color: 6,
+                isSpangram: false
+            },
+            'A Minor 7': {
+                notes: ['A', 'C', 'G', 'E'],
+                indices: [32, 39, 44, 45],
+                color: 0,
+                isSpangram: false
+            },
+            'A# Minor': {
+                notes: ['A#', 'C#', 'E#'],
+                indices: [33, 34, 41],
+                color: 1,
+                isSpangram: false
+            },
+            'G Minor': {
+                notes: ['D', 'B♭', 'G'],
+                indices: [40, 46, 47],
+                color: 2,
+                isSpangram: false
+            },
+            'MINORCHORDS': {
+                notes: ['M', 'I', 'N', 'O', 'R', 'C', 'H', 'O', 'R', 'D', 'S'],
+                // Path spells: M-I-N-O-R-C-H-O-R-D-S
+                indices: [35, 29, 28, 27, 21, 15, 14, 19, 24, 31, 37],
+                color: 3,
+                isSpangram: true
+            }
+        };
+
+        let selectedCells = [];
+        let foundPatterns = new Set();
+        let cells = [];
+        let colorIndex = 0;
+        let audioContext = null;
+        let canvas = null;
+        let ctx = null;
+
+        // Note frequency mapping (A4 = 440Hz)
+        const noteFrequencies = {
+            'C': 261.63, 'C#': 277.18, 'D': 293.66, 'D#': 311.13, 'E♭': 311.13, 'Eb': 311.13,
+            'E': 329.63, 'E#': 349.23, 'F': 349.23, 'F#': 369.99, 'G': 392.00, 'G#': 415.30, 'A♭': 415.30, 'Ab': 415.30,
+            'A': 440.00, 'B♭': 466.16, 'Bb': 466.16, 'B': 493.88, 'A#': 466.16
+        };
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playNote(noteName, duration = 0.4, gain = 0.3) {
+            initAudio();
+
+            const frequency = noteFrequencies[noteName];
+            if (!frequency) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine'; // Piano-like sound
+
+            // Envelope for natural sound
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(gain, audioContext.currentTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playChord(notes) {
+            initAudio();
+
+            // Play all notes simultaneously as a chord
+            const chordGain = 0.2; // Lower gain for multiple notes
+            const duration = 1.2; // Longer duration for chord
+
+            notes.forEach((noteName, index) => {
+                const frequency = noteFrequencies[noteName];
+                if (!frequency) return;
+
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sine';
+
+                // Envelope with slight stagger for richness
+                const startTime = audioContext.currentTime + (index * 0.02);
+                gainNode.gain.setValueAtTime(0, startTime);
+                gainNode.gain.linearRampToValueAtTime(chordGain, startTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+            });
+        }
+
+        function playScale(notes) {
+            initAudio();
+
+            // Play notes in sequence (arpeggio style)
+            notes.forEach((noteName, index) => {
+                const frequency = noteFrequencies[noteName];
+                if (!frequency) return;
+
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sine';
+
+                const startTime = audioContext.currentTime + (index * 0.15);
+                const duration = 0.3;
+
+                gainNode.gain.setValueAtTime(0, startTime);
+                gainNode.gain.linearRampToValueAtTime(0.25, startTime + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+            });
+        }
+
+        function initGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            cells = [];
+
+            gridLayout.forEach((row, rowIndex) => {
+                row.forEach((note, colIndex) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'note-cell';
+                    cell.textContent = note;
+                    cell.dataset.index = rowIndex * 6 + colIndex;
+                    cell.dataset.row = rowIndex;
+                    cell.dataset.col = colIndex;
+                    cell.addEventListener('click', () => toggleCell(cell));
+                    grid.appendChild(cell);
+                    cells.push(cell);
+                });
+            });
+
+            // Setup canvas for drawing lines after grid is rendered
+            setTimeout(() => {
+                canvas = document.getElementById('connectionCanvas');
+                const gridWrapper = document.querySelector('.grid-wrapper');
+                canvas.width = gridWrapper.offsetWidth;
+                canvas.height = gridWrapper.offsetHeight;
+                ctx = canvas.getContext('2d');
+            }, 100);
+
+            updateFoundCount();
+        }
+
+        function drawConnections() {
+            if (!ctx || !canvas) return;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (selectedCells.length < 2) return;
+
+            // Draw lines between selected cells
+            ctx.strokeStyle = '#5a594e';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            ctx.beginPath();
+
+            const gridWrapperRect = document.querySelector('.grid-wrapper').getBoundingClientRect();
+
+            for (let i = 0; i < selectedCells.length; i++) {
+                const cell = cells[selectedCells[i].index];
+                const rect = cell.getBoundingClientRect();
+
+                // Position relative to grid wrapper
+                const x = rect.left - gridWrapperRect.left + rect.width / 2;
+                const y = rect.top - gridWrapperRect.top + rect.height / 2;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+
+            ctx.stroke();
+        }
+
+        function toggleCell(cell) {
+            if (cell.classList.contains('found')) return;
+
+            const index = parseInt(cell.dataset.index);
+            const selectedIndex = selectedCells.findIndex(sel => sel.index === index);
+
+            if (selectedIndex > -1) {
+                // If clicking the last selected cell again, submit the answer
+                if (selectedIndex === selectedCells.length - 1) {
+                    submitScale();
+                }
+            } else {
+                // Check if adjacent to last selected (or first selection)
+                if (selectedCells.length === 0 || isAdjacent(selectedCells[selectedCells.length - 1].index, index)) {
+                    selectedCells.push({
+                        index: index,
+                        note: cell.textContent
+                    });
+                    cell.classList.add('selected');
+
+                    // Play the note sound (only if it's a musical note)
+                    if (noteFrequencies[cell.textContent]) {
+                        playNote(cell.textContent);
+                    }
+
+                    // Draw connection lines
+                    drawConnections();
+                } else {
+                    // Not adjacent - show hint
+                    showHint('Notes must be adjacent!', true);
+                }
+            }
+        }
+
+        function isAdjacent(index1, index2) {
+            const row1 = Math.floor(index1 / 6);
+            const col1 = index1 % 6;
+            const row2 = Math.floor(index2 / 6);
+            const col2 = index2 % 6;
+
+            const rowDiff = Math.abs(row1 - row2);
+            const colDiff = Math.abs(col1 - col2);
+
+            return (rowDiff <= 1 && colDiff <= 1 && (rowDiff + colDiff) > 0);
+        }
+
+        function submitScale() {
+            if (selectedCells.length === 0) {
+                showHint('Select some notes first!', true);
+                return;
+            }
+
+            // Check if selection matches any pattern
+            let matchedPattern = null;
+            let matchedKey = null;
+
+            for (const [patternName, patternData] of Object.entries(patterns)) {
+                if (foundPatterns.has(patternName)) continue;
+
+                // Get selected indices
+                const selectedIndices = selectedCells.map(s => s.index).sort((a, b) => a - b);
+                const patternIndices = [...patternData.indices].sort((a, b) => a - b);
+
+                // Check if indices match
+                if (JSON.stringify(selectedIndices) === JSON.stringify(patternIndices)) {
+                    matchedPattern = patternData;
+                    matchedKey = patternName;
+                    break;
+                }
+            }
+
+            if (matchedPattern) {
+                // Found a pattern!
+                foundPatterns.add(matchedKey);
+
+                selectedCells.forEach(sel => {
+                    cells[sel.index].classList.remove('selected');
+                    cells[sel.index].classList.add('found');
+                    cells[sel.index].classList.add(`color-${matchedPattern.color}`);
+                    if (matchedPattern.isSpangram) {
+                        cells[sel.index].classList.add('spangram');
+                    }
+                });
+
+                // Play the completed pattern sound (if it's musical)!
+                if (!matchedPattern.isSpangram) {
+                    const patternNotes = selectedCells.map(s => s.note);
+
+                    // All patterns are chords - play simultaneously
+                    playChord(patternNotes);
+                }
+
+                addFoundPattern(matchedKey, matchedPattern);
+                selectedCells = [];
+                updateFoundCount();
+
+                if (foundPatterns.size === Object.keys(patterns).length) {
+                    showSuccess();
+                } else {
+                    const remaining = Object.keys(patterns).length - foundPatterns.size;
+                    showHint(`✓ ${matchedKey}! ${remaining} more to find.`, false);
+                }
+            } else {
+                showHint('Not quite... Try a different pattern!', true);
+                clearSelection();
+            }
+        }
+
+        function clearSelection() {
+            selectedCells.forEach(sel => {
+                cells[sel.index].classList.remove('selected');
+            });
+            selectedCells = [];
+
+            // Clear the connection lines
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function addFoundPattern(patternName, patternData) {
+            const chip = document.createElement('span');
+            chip.className = `key-chip color-${patternData.color}`;
+            if (patternData.isSpangram) {
+                chip.classList.add('spangram');
+            }
+            chip.textContent = patternName;
+            document.getElementById('foundList').appendChild(chip);
+        }
+
+        function updateFoundCount() {
+            document.getElementById('foundCount').textContent = foundPatterns.size;
+            document.getElementById('totalCount').textContent = Object.keys(patterns).length;
+        }
+
+        function showHint(message, isError) {
+            // Hint display removed - function kept for compatibility
+        }
+
+        function showSuccess() {
+            const result = document.getElementById('result');
+            result.innerHTML = `
+                <div style="font-size: 28px; margin-bottom: 10px;">🎵</div>
+                <div style="font-size: 20px; margin-bottom: 16px; font-weight: 700;">Perfect Harmony!</div>
+                <div style="font-size: 15px; margin-bottom: 20px; color: #555;">You found all the minor chords</div>
+                <div style="font-size: 16px; background: rgba(0,0,0,0.08); padding: 18px; border-radius: 12px; font-weight: 700; margin-top: 20px;">
+                    <span style="font-size: 20px; letter-spacing: 0.02em;">Look in the shed</span>
+                </div>
+            `;
+            result.classList.add('show');
+        }
+
+        // Event listeners
+        document.getElementById('clearBtn').addEventListener('click', clearSelection);
+
+        // Window resize handler to keep canvas sized correctly
+        window.addEventListener('resize', () => {
+            if (canvas) {
+                const gridWrapper = document.querySelector('.grid-wrapper');
+                canvas.width = gridWrapper.offsetWidth;
+                canvas.height = gridWrapper.offsetHeight;
+                drawConnections();
+            }
+        });
+
+        // Initialize audio on first user interaction
+        document.body.addEventListener('click', initAudio, { once: true });
+
+        // Initialize
+        initGrid();
+    </script>
+</body>
+</html>
