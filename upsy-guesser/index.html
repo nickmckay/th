@@ -334,28 +334,6 @@
             display: block;
         }
 
-        .hint-btn {
-            padding: 10px 30px;
-            font-size: 1em;
-            background: #FFA500;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .hint-btn:hover {
-            background: #FF8C00;
-        }
-
-        .hint-text {
-            font-size: 1em;
-            color: #FFA500;
-            font-style: italic;
-            min-height: 30px;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
@@ -410,9 +388,6 @@
                     <button class="guess-btn" id="guessBtn" onclick="submitGuess()">Submit Guess</button>
                 </div>
 
-                <div class="hint-text" id="hintText"></div>
-                <button class="hint-btn" id="hintBtn" onclick="showHint()">Need a Hint?</button>
-
                 <div class="feedback" id="feedback"></div>
 
                 <button class="next-btn" id="nextBtn" onclick="nextPhoto()">Next Photo →</button>
@@ -447,7 +422,6 @@
         let currentPhotoIndex = 0;
         let correctAnswers = 0;
         let incorrectAnswers = 0;
-        let currentHintShown = false;
 
         // Fisher-Yates shuffle and select first 30
         function selectRandomPhotos(count) {
@@ -535,9 +509,6 @@
                 document.getElementById('guessInput').disabled = false;
                 document.getElementById('guessBtn').disabled = false;
                 document.getElementById('nextBtn').style.display = 'none';
-                document.getElementById('hintText').textContent = '';
-                document.getElementById('hintBtn').style.display = 'inline-block';
-                currentHintShown = false;
 
                 updateProgress();
             };
@@ -778,21 +749,8 @@
             document.getElementById('guessInput').disabled = true;
             document.getElementById('guessBtn').disabled = true;
             document.getElementById('nextBtn').style.display = 'inline-block';
-            document.getElementById('hintBtn').style.display = 'none';
 
             updateProgress();
-        }
-
-        function showHint() {
-            if (currentHintShown) return;
-
-            const photo = photoData[currentPhotoIndex];
-            const correctAnswer = photo.answer;
-
-            // Show first letter as hint
-            const hint = `Hint: The name starts with "${correctAnswer[0]}" and has ${correctAnswer.length} letters`;
-            document.getElementById('hintText').textContent = hint;
-            currentHintShown = true;
         }
 
         function nextPhoto() {

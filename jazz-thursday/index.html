@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Name That Jazzy Christmas Tune</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 60px rgba(217, 119, 6, 0.3);
+            border: 3px solid #d97706;
+        }
+
+        h1 {
+            text-align: center;
+            color: #fbbf24;
+            font-size: 48px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(251, 191, 36, 0.5);
+            font-weight: 700;
+            letter-spacing: 3px;
+            font-style: italic;
+        }
+
+        .progress-info {
+            background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%);
+            color: #fbbf24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 16px;
+            border: 2px solid #a855f7;
+            font-weight: bold;
+        }
+
+        .progress-info .time-unlock {
+            color: #fbbf24;
+            font-size: 20px;
+        }
+
+        .song-item {
+            background: linear-gradient(135deg, #2d2665 0%, #1e1b4b 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #6366f1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .song-item.correct {
+            border-color: #fbbf24;
+            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+        }
+
+        .song-item.incorrect {
+            border-color: #c084fc;
+            background: linear-gradient(135deg, #581c87 0%, #3b0764 100%);
+        }
+
+        .song-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .song-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e1b4b;
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 2px solid #fcd34d;
+        }
+
+        .status-badge {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 5px 12px;
+            border-radius: 15px;
+            border: 2px solid;
+        }
+
+        .status-badge.correct {
+            background: #92400e;
+            color: #fef3c7;
+            border-color: #fbbf24;
+        }
+
+        .status-badge.incorrect {
+            background: #581c87;
+            color: #e9d5ff;
+            border-color: #c084fc;
+        }
+
+        audio {
+            width: 100%;
+            height: 32px;
+            margin-bottom: 10px;
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 2px solid #6b7280;
+            background: white;
+            color: #1f2937;
+            font-weight: bold;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #fef08a;
+            box-shadow: 0 0 10px rgba(254, 240, 138, 0.3);
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #6b7280;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .autocomplete-list.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+            color: #1f2937;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .autocomplete-item:hover {
+            background: #fef08a;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            color: white;
+            border: 3px solid #fbbf24;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 900;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4), 0 0 20px rgba(217, 119, 6, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 30px rgba(251, 191, 36, 0.5);
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%);
+            color: #fbbf24;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+            border: 3px solid #a855f7;
+            box-shadow: 0 6px 20px rgba(91, 33, 182, 0.5);
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .success-message h2 {
+            font-size: 36px;
+            margin-bottom: 15px;
+            color: #fbbf24;
+            font-style: italic;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 28px;
+            color: #c084fc;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .score-display .correct {
+            color: #fbbf24;
+            font-size: 36px;
+        }
+
+        .score-display .total {
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎷 Name That Jazzy Christmas Tune 🎵</h1>
+
+        <div class="progress-info">
+            <div class="time-unlock" id="timeUnlock">🎵 Current Audio Length: 1 second</div>
+        </div>
+
+        <div class="score-display" id="scoreDisplay">
+            Score: <span class="correct">0</span> / <span class="total">12</span> correct
+        </div>
+
+        <div class="controls">
+            <button onclick="checkAnswers()">Check Answers</button>
+            <button onclick="clearAll()">Clear All</button>
+        </div>
+
+        <div id="songsContainer">
+            <!-- Songs will be generated by JavaScript -->
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <h2>🎉 PERFECT SCORE! 🎉</h2>
+            <p style="font-size: 20px;">You correctly identified all 12 Christmas songs!</p>
+            <p style="margin-top: 20px; font-size: 18px;">Your next clue is: <strong>Christmas Wreath</strong></p>
+        </div>
+    </div>
+
+    <script>
+        // Correct answers (song number -> song title)
+        const correctAnswers = {
+            1: "We Three Kings",
+            2: "Joy to the World",
+            3: "O Christmas Tree",
+            4: "Silent Night",
+            5: "Carol of the Bells",
+            6: "Jingle Bells",
+            7: "Hark! The Herald Angels Sing",
+            8: "Blue Christmas",
+            9: "Let It Snow! Let It Snow! Let It Snow!",
+            10: "Deck the Halls",
+            11: "We Wish You a Merry Christmas",
+            12: "O Come, O Come, Emmanuel"
+        };
+
+        // Large list of ~100 Christmas song choices
+        const allSongs = [
+            "A Christmas Carol",
+            "A Holly Jolly Christmas",
+            "All I Want for Christmas Is You",
+            "Angels We Have Heard on High",
+            "Away in a Manger",
+            "Baby, It's Cold Outside",
+            "Blue Christmas",
+            "Carol of the Bells",
+            "The Chipmunk Song",
+            "Christmas in Hollis",
+            "The Christmas Song (Chestnuts Roasting)",
+            "Christmas Time Is Here",
+            "Christmas Wrapping",
+            "Deck the Halls",
+            "Do They Know It's Christmas?",
+            "Do You Hear What I Hear?",
+            "Fairytale of New York",
+            "Feliz Navidad",
+            "The First Noel",
+            "Frosty the Snowman",
+            "Go Tell It on the Mountain",
+            "God Rest Ye Merry Gentlemen",
+            "Good King Wenceslas",
+            "Grandma Got Run Over by a Reindeer",
+            "Hark! The Herald Angels Sing",
+            "Happy Xmas (War Is Over)",
+            "Have Yourself a Merry Little Christmas",
+            "Here Comes Santa Claus",
+            "The Holly and the Ivy",
+            "A Holly Jolly Christmas",
+            "I Heard the Bells on Christmas Day",
+            "I Saw Mommy Kissing Santa Claus",
+            "I Saw Three Ships",
+            "I'll Be Home for Christmas",
+            "It Came Upon a Midnight Clear",
+            "It's Beginning to Look a Lot Like Christmas",
+            "It's the Most Wonderful Time of the Year",
+            "Jingle Bell Rock",
+            "Jingle Bells",
+            "Joy to the World",
+            "Last Christmas",
+            "Let It Snow! Let It Snow! Let It Snow!",
+            "Little Drummer Boy",
+            "Little Saint Nick",
+            "March of the Toys",
+            "Mary, Did You Know?",
+            "Mele Kalikimaka",
+            "The Most Wonderful Time of the Year",
+            "Mistletoe and Wine",
+            "The Night Before Christmas",
+            "Nuttin' for Christmas",
+            "O Come, All Ye Faithful",
+            "O Come, O Come, Emmanuel",
+            "O Holy Night",
+            "O Little Town of Bethlehem",
+            "O Tannenbaum",
+            "Rockin' Around the Christmas Tree",
+            "Rudolph the Red-Nosed Reindeer",
+            "Santa Baby",
+            "Santa Claus Is Coming to Town",
+            "Silent Night",
+            "Silver and Gold",
+            "Silver Bells",
+            "Sleigh Ride",
+            "The Twelve Days of Christmas",
+            "Up on the Housetop",
+            "We Three Kings",
+            "We Wish You a Merry Christmas",
+            "What Child Is This?",
+            "White Christmas",
+            "Winter Wonderland",
+            "Wonderful Christmastime",
+            "You're a Mean One, Mr. Grinch",
+            "Angels from the Realms of Glory",
+            "Bring a Torch, Jeanette, Isabella",
+            "Ding Dong Merrily on High",
+            "Emmanuel",
+            "Good Christian Men, Rejoice",
+            "Greensleeves",
+            "I Wonder as I Wander",
+            "In the Bleak Midwinter",
+            "Infant Holy, Infant Lowly",
+            "Jesus, Jesus, Rest Your Head",
+            "Lo, How a Rose E'er Blooming",
+            "Mary's Boy Child",
+            "O Christmas Tree",
+            "Once in Royal David's City",
+            "Pat-a-Pan",
+            "Rise Up, Shepherd, and Follow",
+            "Sing We Now of Christmas",
+            "Still, Still, Still",
+            "The Coventry Carol",
+            "The Friendly Beasts",
+            "The Little Road to Bethlehem",
+            "The Snow Lay on the Ground",
+            "There's a Song in the Air",
+            "'Twas the Night Before Christmas",
+            "Ukrainian Bell Carol",
+            "Unto Us a Boy Is Born",
+            "What Are You Doing New Year's Eve?",
+            "While Shepherds Watched Their Flocks"
+        ].sort();
+
+        let userAnswers = {};
+        let audioPlayers = {};
+        let correctCount = 0;
+        let maxPlayTime = 1; // Starts at 1 second
+
+        // Initialize the game
+        function init() {
+            createSongItems();
+            updateScore();
+            updateTimeDisplay();
+        }
+
+        // Create all song items
+        function createSongItems() {
+            const container = document.getElementById('songsContainer');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= 12; i++) {
+                const songDiv = document.createElement('div');
+                songDiv.className = 'song-item';
+                songDiv.id = `song-${i}`;
+
+                songDiv.innerHTML = `
+                    <div class="song-header">
+                        <span class="song-number">Song #${i}</span>
+                        <span class="status-badge" id="status-${i}" style="display: none;"></span>
+                    </div>
+                    <audio id="audio-${i}" controls>
+                        <source src="songs/song${i}.mp3" type="audio/mpeg">
+                        Your browser does not support audio.
+                    </audio>
+                    <div class="input-container">
+                        <input type="text"
+                               id="input-${i}"
+                               placeholder="Type to search for song title..."
+                               autocomplete="off"
+                               oninput="filterSongs(${i})"
+                               onfocus="showAutocomplete(${i})"
+                               onblur="setTimeout(() => hideAutocomplete(${i}), 200)">
+                        <div class="autocomplete-list" id="autocomplete-${i}"></div>
+                    </div>
+                `;
+
+                container.appendChild(songDiv);
+
+                // Setup audio player with time limit
+                const audio = document.getElementById(`audio-${i}`);
+                audioPlayers[i] = audio;
+
+                audio.addEventListener('timeupdate', () => {
+                    if (audio.currentTime >= maxPlayTime) {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    }
+                });
+
+                audio.addEventListener('ended', () => {
+                    audio.currentTime = 0;
+                });
+            }
+        }
+
+        // Filter songs based on input
+        function filterSongs(songNum) {
+            const input = document.getElementById(`input-${songNum}`);
+            const searchTerm = input.value.toLowerCase();
+            const autocomplete = document.getElementById(`autocomplete-${songNum}`);
+
+            if (searchTerm.length === 0) {
+                autocomplete.innerHTML = '';
+                autocomplete.classList.remove('show');
+                return;
+            }
+
+            const matches = allSongs.filter(song =>
+                song.toLowerCase().includes(searchTerm)
+            );
+
+            if (matches.length === 0) {
+                autocomplete.innerHTML = '<div class="autocomplete-item">No matches found</div>';
+            } else {
+                autocomplete.innerHTML = matches.slice(0, 10).map(song =>
+                    `<div class="autocomplete-item" onclick="selectSong(${songNum}, '${song.replace(/'/g, "\\'")}')">${song}</div>`
+                ).join('');
+            }
+
+            autocomplete.classList.add('show');
+
+            // Update user answer
+            userAnswers[songNum] = input.value;
+            checkAnswersRealtime();
+        }
+
+        // Select a song from autocomplete
+        function selectSong(songNum, title) {
+            const input = document.getElementById(`input-${songNum}`);
+            input.value = title;
+            userAnswers[songNum] = title;
+            hideAutocomplete(songNum);
+            checkAnswersRealtime();
+        }
+
+        // Show autocomplete
+        function showAutocomplete(songNum) {
+            const input = document.getElementById(`input-${songNum}`);
+            if (input.value.length > 0) {
+                filterSongs(songNum);
+            }
+        }
+
+        // Hide autocomplete
+        function hideAutocomplete(songNum) {
+            const autocomplete = document.getElementById(`autocomplete-${songNum}`);
+            autocomplete.classList.remove('show');
+        }
+
+        // Check answers in real-time to update audio duration
+        function checkAnswersRealtime() {
+            let correct = 0;
+
+            for (let i = 1; i <= 12; i++) {
+                if (userAnswers[i] === correctAnswers[i]) {
+                    correct++;
+                }
+            }
+
+            correctCount = correct;
+            maxPlayTime = 1 + (correctCount * 0.5); // 0 correct = 1 sec, 1 correct = 1.5 sec, 2 correct = 2 sec, etc.
+
+            updateScore();
+            updateTimeDisplay();
+        }
+
+        // Check answers and show visual feedback
+        function checkAnswers() {
+            for (let i = 1; i <= 12; i++) {
+                const songDiv = document.getElementById(`song-${i}`);
+                const status = document.getElementById(`status-${i}`);
+                const userAnswer = userAnswers[i];
+                const correctAnswer = correctAnswers[i];
+
+                if (userAnswer === correctAnswer) {
+                    songDiv.classList.add('correct');
+                    songDiv.classList.remove('incorrect');
+                    status.textContent = '✓ Correct';
+                    status.className = 'status-badge correct';
+                    status.style.display = 'inline-block';
+                } else if (userAnswer) {
+                    songDiv.classList.add('incorrect');
+                    songDiv.classList.remove('correct');
+                    status.textContent = '✗ Wrong';
+                    status.className = 'status-badge incorrect';
+                    status.style.display = 'inline-block';
+                } else {
+                    songDiv.classList.remove('correct', 'incorrect');
+                    status.style.display = 'none';
+                }
+            }
+
+            if (correctCount === 12) {
+                document.getElementById('successMessage').classList.add('show');
+            }
+        }
+
+        // Clear all answers
+        function clearAll() {
+            userAnswers = {};
+            correctCount = 0;
+            maxPlayTime = 1;
+
+            for (let i = 1; i <= 12; i++) {
+                const input = document.getElementById(`input-${i}`);
+                input.value = '';
+
+                const songDiv = document.getElementById(`song-${i}`);
+                songDiv.classList.remove('correct', 'incorrect');
+
+                const status = document.getElementById(`status-${i}`);
+                status.style.display = 'none';
+            }
+
+            updateScore();
+            updateTimeDisplay();
+            document.getElementById('successMessage').classList.remove('show');
+        }
+
+        // Update score display
+        function updateScore() {
+            const scoreDiv = document.getElementById('scoreDisplay');
+            scoreDiv.innerHTML = `Score: <span class="correct">${correctCount}</span> / <span class="total">12</span> correct`;
+        }
+
+        // Update time unlock display
+        function updateTimeDisplay() {
+            const timeDiv = document.getElementById('timeUnlock');
+            timeDiv.textContent = `🎵 Current Audio Length: ${maxPlayTime} second${maxPlayTime !== 1 ? 's' : ''}`;
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
