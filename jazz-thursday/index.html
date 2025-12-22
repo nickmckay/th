@@ -66,13 +66,13 @@
         }
 
         .song-item.correct {
-            border-color: #fbbf24;
-            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+            border-color: #10b981;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
         }
 
         .song-item.incorrect {
-            border-color: #c084fc;
-            background: linear-gradient(135deg, #581c87 0%, #3b0764 100%);
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
         }
 
         .song-header {
@@ -101,15 +101,15 @@
         }
 
         .status-badge.correct {
-            background: #92400e;
-            color: #fef3c7;
-            border-color: #fbbf24;
+            background: #047857;
+            color: #d1fae5;
+            border-color: #10b981;
         }
 
         .status-badge.incorrect {
-            background: #581c87;
-            color: #e9d5ff;
-            border-color: #c084fc;
+            background: #b91c1c;
+            color: #fecaca;
+            border-color: #ef4444;
         }
 
         audio {
@@ -433,7 +433,7 @@
                         <span class="song-number">Song #${i}</span>
                         <span class="status-badge" id="status-${i}" style="display: none;"></span>
                     </div>
-                    <audio id="audio-${i}" controls>
+                    <audio id="audio-${i}" controls controlsList="nodownload" oncontextmenu="return false;">
                         <source src="songs/song${i}.mp3" type="audio/mpeg">
                         Your browser does not support audio.
                     </audio>
