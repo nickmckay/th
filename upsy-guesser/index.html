@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carter's Photo Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            display: none;
+        }
+
+        .instructions {
+            display: none;
+        }
+
+        .game-area {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .photo-section {
+            flex: 0 0 auto;
+        }
+
+        .controls-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .photo-canvas-container {
+            position: relative;
+            display: inline-block;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        #photoCanvas {
+            display: block;
+            max-width: 900px;
+            max-height: 700px;
+        }
+
+        .guess-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .guess-input {
+            padding: 15px;
+            font-size: 1.2em;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .guess-btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .guess-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .guess-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback {
+            font-size: 1.3em;
+            font-weight: bold;
+            min-height: 40px;
+        }
+
+        .feedback.correct {
+            color: #4CAF50;
+        }
+
+        .feedback.incorrect {
+            color: #f44336;
+        }
+
+        .next-btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            display: none;
+        }
+
+        .next-btn:hover {
+            background: #45a049;
+        }
+
+        .progress {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border: 6px solid #4a5568;
+            z-index: 1000;
+            display: none;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .game-over.show {
+            display: block;
+            animation: gameOverAppear 0.5s ease-out;
+        }
+
+        @keyframes gameOverAppear {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .game-over h2 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .game-over p {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .results-table {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .result-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-size: 1.2em;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .result-row.header {
+            font-weight: bold;
+            background: #667eea;
+            color: white;
+            opacity: 1;
+        }
+
+        .result-row.normal {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        .result-row.carter {
+            background: #ffd700;
+            color: #2d3748;
+            font-weight: bold;
+            border: 3px solid #ff6b35;
+        }
+
+        .result-row.highlight {
+            background: #48bb78;
+            color: white;
+        }
+
+        .game-over .answer {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin: 30px 0;
+            letter-spacing: 2px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        .hint-btn {
+            padding: 10px 30px;
+            font-size: 1em;
+            background: #FFA500;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .hint-btn:hover {
+            background: #FF8C00;
+        }
+
+        .hint-text {
+            font-size: 1em;
+            color: #FFA500;
+            font-style: italic;
+            min-height: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="container">
+        <h1>📸 Carter's Photo Challenge 📸</h1>
+
+        <div class="instructions">
+            <h2>Can You Guess Who's in the Photo?</h2>
+            <p>Look at the blurred photo (the box shows who to guess). Type your answer and click Submit!</p>
+        </div>
+
+        <div class="game-area">
+            <div class="photo-section">
+                <div class="photo-canvas-container">
+                    <canvas id="photoCanvas"></canvas>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <div class="progress" id="progress">Photo 1 of ?</div>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="correctCount">0</div>
+                        <div class="stat-label">Correct</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="incorrectCount">0</div>
+                        <div class="stat-label">Incorrect</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="currentTime">0.0s</div>
+                        <div class="stat-label">Current Time</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalTimeDisplay">0.0s</div>
+                        <div class="stat-label">Total Time</div>
+                    </div>
+                </div>
+
+                <div class="guess-section">
+                    <input type="text" id="guessInput" class="guess-input" placeholder="Who is it?" list="namesList" autocomplete="off">
+                    <datalist id="namesList"></datalist>
+                    <button class="guess-btn" id="guessBtn" onclick="submitGuess()">Submit Guess</button>
+                </div>
+
+                <div class="hint-text" id="hintText"></div>
+                <button class="hint-btn" id="hintBtn" onclick="showHint()">Need a Hint?</button>
+
+                <div class="feedback" id="feedback"></div>
+
+                <button class="next-btn" id="nextBtn" onclick="nextPhoto()">Next Photo →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div class="game-over" id="gameOver">
+        <h2 id="gameOverTitle">Results</h2>
+        <div id="gameOverContent"></div>
+    </div>
+
+    <script>
+        // EDIT THIS to change where the final clue leads
+        const FINAL_LOCATION = "UNDER YOUR BED";
+
+        // Previous results from Records.csv
+        const previousResults = [
+            { name: "Tyler", time: 317.5, correct: 28 },
+            { name: "Ethan", time: 227.2, correct: 25 },
+            { name: "Micah", time: 310.9, correct: 25 },
+            { name: "Landon", time: 317.9, correct: 21 },
+            { name: "Mom", time: 257.7, correct: 27 }
+        ];
+
+        // All photos - Config embedded directly
+        const allPhotoData = [{"file":"upsy - 1.jpeg","answer":"Ethan","box":{"x":14.666666666666666,"y":29.833333333333336,"width":34.22222222222222,"height":27}},{"file":"upsy - 2.jpeg","answer":"Dad","box":{"x":42.87305122494432,"y":57.99999999999999,"width":24.276169265033406,"height":26.166666666666664}},{"file":"upsy - 3.jpeg","answer":"Carter","box":{"x":2.338530066815145,"y":41.5,"width":30.28953229398664,"height":18.166666666666668}},{"file":"upsy - 4.jpeg","answer":"Carter","box":{"x":60.69042316258352,"y":45.666666666666664,"width":23.83073496659243,"height":19.5}},{"file":"upsy - 5.jpeg","answer":"Micah","box":{"x":0.779510022271715,"y":65.33333333333333,"width":19.821826280623608,"height":13.166666666666666}},{"file":"upsy - 6.jpeg","answer":"Carter","box":{"x":51.781737193763924,"y":49,"width":16.481069042316257,"height":13.5}},{"file":"upsy - 7.jpeg","answer":"Landon","box":{"x":22.383073496659243,"y":64,"width":15.367483296213807,"height":12.666666666666668}},{"file":"upsy - 8.jpeg","answer":"Mom","box":{"x":9.242761692650333,"y":50,"width":10.913140311804009,"height":8.833333333333334}},{"file":"upsy - 9.jpeg","answer":"Ethan","box":{"x":7.2383073496659245,"y":52.5,"width":24.721603563474385,"height":28.333333333333332}},{"file":"upsy - 10.jpeg","answer":"Carter","box":{"x":43.09576837416481,"y":53.333333333333336,"width":29.175946547884184,"height":20.5}},{"file":"upsy - 11.jpeg","answer":"Sean","box":{"x":68.26280623608018,"y":45.666666666666664,"width":24.053452115812917,"height":15.166666666666668}},{"file":"upsy - 12.jpeg","answer":"Landon","box":{"x":9.910913140311804,"y":52.33333333333333,"width":15.14476614699332,"height":13.5}},{"file":"upsy - 13.jpeg","answer":"Landon","box":{"x":47.55011135857461,"y":71.66666666666667,"width":17.37193763919822,"height":15.166666666666668}},{"file":"upsy - 14.jpeg","answer":"Tyler","box":{"x":47.772828507795104,"y":51.66666666666667,"width":36.97104677060133,"height":29.833333333333336}},{"file":"upsy - 15.jpeg","answer":"Landon","box":{"x":-0.11135857461024498,"y":40.666666666666664,"width":16.258351893095767,"height":9.5}},{"file":"upsy - 16.jpeg","answer":"Ethan","box":{"x":61.581291759465486,"y":45.166666666666664,"width":20.044543429844097,"height":21}},{"file":"upsy - 17.jpeg","answer":"Micah","box":{"x":10.579064587973273,"y":58.333333333333336,"width":22.048997772828507,"height":18.5}},{"file":"upsy - 18.jpeg","answer":"Carter","box":{"x":64.03118040089086,"y":50.66666666666667,"width":20.044543429844097,"height":18.333333333333332}},{"file":"upsy - 19.jpeg","answer":"Mom","box":{"x":62.47216035634744,"y":42.333333333333336,"width":24.276169265033406,"height":21}},{"file":"upsy - 20.jpeg","answer":"Ethan","box":{"x":33.29621380846326,"y":48.5,"width":24.276169265033406,"height":17.333333333333336}},{"file":"upsy - 21.jpeg","answer":"Micah","box":{"x":55.122494432071264,"y":67.5,"width":30.066815144766146,"height":23.666666666666668}},{"file":"upsy - 22.jpeg","answer":"Carter","box":{"x":40.645879732739424,"y":67.83333333333333,"width":17.14922048997773,"height":14.499999999999998}},{"file":"upsy - 23.jpeg","answer":"Dad","box":{"x":66.03563474387528,"y":46.166666666666664,"width":30.51224944320713,"height":29.166666666666668}},{"file":"upsy - 24.jpeg","answer":"Ethan","box":{"x":22.605790645879733,"y":61.5,"width":15.367483296213807,"height":12.333333333333334}},{"file":"upsy - 25.jpeg","answer":"Mom","box":{"x":49.33184855233853,"y":44.83333333333333,"width":20.044543429844097,"height":20.333333333333332}},{"file":"upsy - 26.jpeg","answer":"Landon","box":{"x":12.583518930957686,"y":62.83333333333333,"width":19.821826280623608,"height":19}},{"file":"upsy - 27.jpeg","answer":"Tyler","box":{"x":14.365256124721604,"y":74.83333333333333,"width":30.734966592427615,"height":23.833333333333336}},{"file":"upsy - 28.jpeg","answer":"Landon","box":{"x":64.47661469933185,"y":43.166666666666664,"width":15.590200445434299,"height":13.666666666666666}},{"file":"upsy - 29.jpeg","answer":"Mom","box":{"x":41.31403118040089,"y":54.666666666666664,"width":11.58129175946548,"height":10.166666666666666}},{"file":"upsy - 30.jpeg","answer":"Carter","box":{"x":5.456570155902004,"y":31.333333333333336,"width":20.489977728285076,"height":17.166666666666668}},{"file":"upsy - 31.jpeg","answer":"Tyler","box":{"x":37.97327394209354,"y":72,"width":23.16258351893096,"height":19.666666666666664}},{"file":"upsy - 32.jpeg","answer":"Micah","box":{"x":51.11358574610245,"y":80,"width":18.262806236080177,"height":15.666666666666668}},{"file":"upsy - 33.jpeg","answer":"Mom","box":{"x":68.70824053452115,"y":50.33333333333333,"width":20.93541202672606,"height":17.166666666666668}},{"file":"upsy - 34.jpeg","answer":"Carter","box":{"x":15.924276169265033,"y":51.66666666666667,"width":18.70824053452116,"height":18.166666666666668}},{"file":"upsy - 35.jpeg","answer":"Carter","box":{"x":1.2249443207126949,"y":29.333333333333332,"width":17.14922048997773,"height":16.666666666666664}},{"file":"upsy - 36.jpeg","answer":"Micah","box":{"x":49.10913140311804,"y":42.16666666666667,"width":10.022271714922049,"height":7.833333333333334}},{"file":"upsy - 37.jpeg","answer":"Dad","box":{"x":39.08685968819599,"y":47.16666666666667,"width":21.826280623608017,"height":24.666666666666668}},{"file":"upsy - 38.jpeg","answer":"Ethan","box":{"x":18.596881959910913,"y":35.833333333333336,"width":21.603563474387528,"height":16.833333333333332}},{"file":"upsy - 39.jpeg","answer":"Carter","box":{"x":60.02227171492205,"y":49.333333333333336,"width":26.948775055679285,"height":21.333333333333336}},{"file":"upsy - 40.jpeg","answer":"Mom","box":{"x":77.83964365256125,"y":9,"width":21.380846325167038,"height":21.5}},{"file":"upsy - 41.jpeg","answer":"Tyler","box":{"x":37.97327394209354,"y":50.66666666666667,"width":13.808463251670378,"height":12.833333333333332}},{"file":"upsy - 42.jpeg","answer":"Micah","box":{"x":27.728285077951004,"y":49.5,"width":14.92204899777283,"height":11.833333333333334}},{"file":"upsy - 43.jpeg","answer":"Dad","box":{"x":43.54120267260579,"y":59.66666666666667,"width":21.826280623608017,"height":27}},{"file":"upsy - 44.jpeg","answer":"Tyler","box":{"x":1.0022271714922049,"y":33.666666666666664,"width":13.3630289532294,"height":13}},{"file":"upsy - 45.jpeg","answer":"Evelyn","box":{"x":5.233853006681515,"y":57.99999999999999,"width":26.280623608017816,"height":17.333333333333336}},{"file":"upsy - 46.jpeg","answer":"Bereket","box":{"x":72.44444444444444,"y":37.5,"width":18.666666666666668,"height":15.333333333333332}},{"file":"upsy - 47.jpeg","answer":"Ethan","box":{"x":43.55555555555555,"y":52.5,"width":22.444444444444443,"height":19.833333333333332}},{"file":"upsy - 48.jpeg","answer":"Micah","box":{"x":4.444444444444445,"y":66.66666666666666,"width":22.444444444444443,"height":20}},{"file":"upsy - 49.jpeg","answer":"Landon","box":{"x":55.333333333333336,"y":54.833333333333336,"width":18.88888888888889,"height":11}},{"file":"upsy - 50.jpeg","answer":"Micah","box":{"x":24,"y":66.5,"width":22.22222222222222,"height":26}},{"file":"upsy - 51.jpeg","answer":"Tyler","box":{"x":26,"y":71.66666666666667,"width":16.666666666666664,"height":22.166666666666668}},{"file":"upsy - 52.jpeg","answer":"Landon","box":{"x":66.88888888888889,"y":50,"width":23.333333333333332,"height":16.666666666666664}},{"file":"upsy - 53.jpeg","answer":"Dad","box":{"x":29.333333333333332,"y":51.5,"width":31.11111111111111,"height":24.333333333333336}},{"file":"upsy - 54.jpeg","answer":"Micah","box":{"x":73.55555555555556,"y":74,"width":22.88888888888889,"height":17}},{"file":"upsy - 55.jpeg","answer":"Mom","box":{"x":46.22222222222222,"y":61.66666666666667,"width":21.11111111111111,"height":17.166666666666668}},{"file":"upsy - 56.jpeg","answer":"Carter","box":{"x":13.111111111111112,"y":43.5,"width":25.555555555555554,"height":23.166666666666664}},{"file":"upsy - 57.jpeg","answer":"Landon","box":{"x":52,"y":75.83333333333333,"width":21.11111111111111,"height":15.333333333333332}},{"file":"upsy - 58.jpeg","answer":"Tyler","box":{"x":0.6666666666666667,"y":79,"width":31.11111111111111,"height":20.666666666666668}},{"file":"upsy - 59.jpeg","answer":"Mom","box":{"x":77.77777777777779,"y":45.166666666666664,"width":19.555555555555557,"height":14.666666666666666}},{"file":"upsy - 60.jpeg","answer":"Ethan","box":{"x":7.555555555555555,"y":50.5,"width":12,"height":10.333333333333334}},{"file":"upsy - 61.jpeg","answer":"Carter","box":{"x":70,"y":45.166666666666664,"width":27.77777777777778,"height":23.833333333333336}},{"file":"upsy - 62.jpeg","answer":"Dad","box":{"x":19.555555555555557,"y":43.833333333333336,"width":25.77777777777778,"height":25.833333333333336}},{"file":"upsy - 63.jpeg","answer":"Mom","box":{"x":29.333333333333332,"y":60.333333333333336,"width":18.22222222222222,"height":12.666666666666668}},{"file":"upsy - 64.jpeg","answer":"Landon","box":{"x":48.44444444444444,"y":59,"width":30.666666666666664,"height":29.666666666666668}},{"file":"upsy - 65.jpeg","answer":"Mom","box":{"x":7.333333333333333,"y":40.166666666666664,"width":18.666666666666668,"height":16.166666666666664}},{"file":"upsy - 66.jpeg","answer":"Landon","box":{"x":39.111111111111114,"y":66.66666666666666,"width":19.11111111111111,"height":13.166666666666666}},{"file":"upsy - 67.jpeg","answer":"Carter","box":{"x":69.77777777777779,"y":50.33333333333333,"width":24.88888888888889,"height":19.666666666666664}},{"file":"upsy - 68.jpeg","answer":"Tyler","box":{"x":33.77777777777778,"y":69.83333333333334,"width":23.11111111111111,"height":23.5}},{"file":"upsy - 69.jpeg","answer":"Mom","box":{"x":84.22222222222221,"y":50,"width":14.666666666666666,"height":14.666666666666666}},{"file":"upsy - 70.jpeg","answer":"Landon","box":{"x":8.444444444444445,"y":50.66666666666667,"width":38,"height":26}},{"file":"upsy - 71.jpeg","answer":"Mom","box":{"x":29.777777777777775,"y":57.166666666666664,"width":24,"height":18}},{"file":"upsy - 72.jpeg","answer":"Tyler","box":{"x":21.555555555555557,"y":51.16666666666667,"width":8.444444444444445,"height":6.166666666666667}},{"file":"upsy - 73.jpeg","answer":"Tyler","box":{"x":41.11111111111111,"y":62.33333333333333,"width":20.666666666666668,"height":16.5}},{"file":"upsy - 74.jpeg","answer":"Carter","box":{"x":51.11111111111111,"y":52.83333333333333,"width":26.222222222222225,"height":20.666666666666668}},{"file":"upsy - 75.jpeg","answer":"Dad","box":{"x":10.888888888888888,"y":44,"width":31.333333333333336,"height":25.5}},{"file":"upsy - 76.jpeg","answer":"Carter","box":{"x":34,"y":72.33333333333334,"width":24.88888888888889,"height":17}},{"file":"upsy - 77.jpeg","answer":"Dad","box":{"x":17.11111111111111,"y":56.333333333333336,"width":31.555555555555554,"height":23.666666666666668}},{"file":"upsy - 78.jpeg","answer":"Dyllon","box":{"x":51.11358574610245,"y":31.833333333333336,"width":14.699331848552339,"height":9.666666666666666}}];
+
+        // Randomly select 30 photos for this game
+        let photoData = [];
+        let currentPhotoIndex = 0;
+        let correctAnswers = 0;
+        let incorrectAnswers = 0;
+        let currentHintShown = false;
+
+        // Fisher-Yates shuffle and select first 30
+        function selectRandomPhotos(count) {
+            const shuffled = [...allPhotoData];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled.slice(0, count);
+        }
+
+        // Initialize with 30 random photos
+        photoData = selectRandomPhotos(30);
+
+        // Timer tracking
+        let photoStartTime = 0;
+        let totalTime = 0;
+        let revealProgress = 0;  // 0 = fully obscured, 1 = fully revealed
+        let animationFrameId = null;
+
+        // Canvas
+        const canvas = document.getElementById('photoCanvas');
+        const ctx = canvas.getContext('2d');
+        let currentImg = new Image();
+        let isBlurred = true;
+
+        // Different obscuring effects
+        const effects = [
+            'blur',
+            'pixelate',
+            'invert',
+            'grayscale',
+            'contrast',
+            'brightness',
+            'sepia',
+            'hue-rotate',
+            'saturate'
+        ];
+
+        // Assign effect to each photo (deterministic based on index)
+        function getEffectForPhoto(index) {
+            return effects[index % effects.length];
+        }
+
+        function loadPhoto() {
+            if (currentPhotoIndex >= photoData.length) {
+                showGameOver();
+                return;
+            }
+
+            const photo = photoData[currentPhotoIndex];
+            const photoPath = `upsy/${photo.file}`;
+
+            currentImg = new Image();
+            currentImg.onload = () => {
+                // Set canvas size to image size (scaled down if needed)
+                const maxWidth = 800;
+                const maxHeight = 600;
+                let width = currentImg.width;
+                let height = currentImg.height;
+
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+                if (height > maxHeight) {
+                    width = (width * maxHeight) / height;
+                    height = maxHeight;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                isBlurred = true;
+                revealProgress = 0;
+
+                // Start timer and animation
+                photoStartTime = Date.now();
+                startRevealAnimation();
+
+                // Reset UI
+                document.getElementById('feedback').textContent = '';
+                document.getElementById('feedback').className = 'feedback';
+                document.getElementById('guessInput').value = '';
+                document.getElementById('guessInput').disabled = false;
+                document.getElementById('guessBtn').disabled = false;
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('hintText').textContent = '';
+                document.getElementById('hintBtn').style.display = 'inline-block';
+                currentHintShown = false;
+
+                updateProgress();
+            };
+            currentImg.src = photoPath;
+        }
+
+        // Reveal the photo in discrete steps every 1 second (10 seconds total)
+        function startRevealAnimation() {
+            const STEP_INTERVAL = 1000; // 1 second per step
+            const TOTAL_STEPS = 10; // 10 steps = 10 seconds total
+            const REVEAL_DURATION = STEP_INTERVAL * TOTAL_STEPS; // 10 seconds
+
+            function animate() {
+                const elapsed = Date.now() - photoStartTime;
+
+                // Calculate which step we're on (0, 1, 2, 3... 10)
+                const currentStep = Math.min(Math.floor(elapsed / STEP_INTERVAL), TOTAL_STEPS);
+                revealProgress = currentStep / TOTAL_STEPS; // 0, 0.1, 0.2, 0.3... 1.0
+
+                // Update current time display
+                document.getElementById('currentTime').textContent = (elapsed / 1000).toFixed(1) + 's';
+
+                drawPhoto();
+
+                // Continue animation if not fully revealed
+                if (revealProgress < 1) {
+                    animationFrameId = requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        }
+
+        function stopRevealAnimation() {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+        }
+
+        function drawPhoto() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (isBlurred) {
+                const effect = getEffectForPhoto(currentPhotoIndex);
+                // Calculate obscuring strength based on reveal progress
+                const obscureAmount = 1 - revealProgress;  // 1 = fully obscured, 0 = clear
+
+                // Apply the appropriate effect with gradual reveal
+                switch(effect) {
+                    case 'pixelate':
+                        // Pixelation: gradually reduce pixel size
+                        const maxPixelSize = 20;
+                        const minPixelSize = 1;
+                        const pixelSize = Math.max(minPixelSize, maxPixelSize * obscureAmount);
+                        const smallWidth = canvas.width / pixelSize;
+                        const smallHeight = canvas.height / pixelSize;
+
+                        // Disable smoothing for pixelation
+                        ctx.imageSmoothingEnabled = false;
+                        ctx.drawImage(currentImg, 0, 0, smallWidth, smallHeight);
+                        ctx.drawImage(canvas, 0, 0, smallWidth, smallHeight, 0, 0, canvas.width, canvas.height);
+                        ctx.imageSmoothingEnabled = true;
+                        break;
+
+                    case 'blur':
+                        const blurAmount = 20 * obscureAmount;
+                        ctx.filter = `blur(${blurAmount}px)`;
+                        ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
+                        ctx.filter = 'none';
+                        break;
+
+                    case 'invert':
+                        const invertAmount = 100 * obscureAmount;
+                        const invertBlur = 8 * obscureAmount;
+                        ctx.filter = `invert(${invertAmount}%) blur(${invertBlur}px)`;
+                        ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
+                        ctx.filter = 'none';
+                        break;
+
+                    case 'grayscale':
+                        const grayAmount = 100 * obscureAmount;
+                        const contrastAmount = 50 + (50 * revealProgress); // 50% to 100%
+                        const grayBlur = 8 * obscureAmount;
+                        ctx.filter = `grayscale(${grayAmount}%) contrast(${contrastAmount}%) blur(${grayBlur}px)`;
+                        ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
+                        ctx.filter = 'none';
+                        break;
+
+                    case 'contrast':
+                        const highContrast = 100 + (200 * obscureAmount); // 100% to 300%
+                        const contrastBlur = 8 * obscureAmount;
+                        ctx.filter = `contrast(${highContrast}%) blur(${contrastBlur}px)`;
+                        ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
+                        ctx.filter = 'none';
+                        break;
+
+                    case 'brightness':
+                        const brightnessAmount = 30 + (70 * revealProgress); // 30% to 100%
+                        const brightnessBlur = 8 * obscureAmount;
+                        ctx.filter = `brightness(${brightnessAmount}%) blur(${brightnessBlur}px)`;
+                        ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
+                        ctx.filter = 'none';
+                        break;
+
+                    case 'sepia':
+                        const sepiaAmount = 100 * obscureAmount;
+                        const sepiaBlur = 8 * obscureAmount;
+                        ctx.filter = `sepia(${sepiaAmount}%) blur(${sepiaBlur}px)`;
+                        ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
+                        ctx.filter = 'none';
+                        break;
+
+                    case 'hue-rotate':
+                        const hueAmount = 180 * obscureAmount;
+                        const hueBlur = 8 * obscureAmount;
+                        ctx.filter = `hue-rotate(${hueAmount}deg) blur(${hueBlur}px)`;
+                        ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
+                        ctx.filter = 'none';
+                        break;
+
+                    case 'saturate':
+                        const saturateAmount = 100 + (400 * obscureAmount); // 100% to 500%
+                        const saturateBlur = 8 * obscureAmount;
+                        ctx.filter = `saturate(${saturateAmount}%) blur(${saturateBlur}px)`;
+                        ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
+                        ctx.filter = 'none';
+                        break;
+
+                    default:
+                        const defaultBlur = 20 * obscureAmount;
+                        ctx.filter = `blur(${defaultBlur}px)`;
+                        ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
+                        ctx.filter = 'none';
+                }
+
+                // Draw highlight box
+                const photo = photoData[currentPhotoIndex];
+                if (photo.box) {
+                    const x = (photo.box.x / 100) * canvas.width;
+                    const y = (photo.box.y / 100) * canvas.height;
+                    const w = (photo.box.width / 100) * canvas.width;
+                    const h = (photo.box.height / 100) * canvas.height;
+
+                    // Glowing box effect
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 5;
+                    ctx.shadowColor = '#FFD700';
+                    ctx.shadowBlur = 15;
+                    ctx.strokeRect(x, y, w, h);
+                    ctx.shadowBlur = 0;
+
+                    // Semi-transparent fill
+                    ctx.fillStyle = 'rgba(255, 215, 0, 0.15)';
+                    ctx.fillRect(x, y, w, h);
+                }
+            } else {
+                // Draw clear image
+                ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
+
+                // Still show the box on revealed image
+                const photo = photoData[currentPhotoIndex];
+                if (photo.box) {
+                    const x = (photo.box.x / 100) * canvas.width;
+                    const y = (photo.box.y / 100) * canvas.height;
+                    const w = (photo.box.width / 100) * canvas.width;
+                    const h = (photo.box.height / 100) * canvas.height;
+
+                    ctx.strokeStyle = '#4CAF50';
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(x, y, w, h);
+                }
+            }
+        }
+
+        function updateProgress() {
+            document.getElementById('progress').textContent =
+                `Photo ${currentPhotoIndex + 1} of ${photoData.length}`;
+
+            document.getElementById('correctCount').textContent = correctAnswers;
+            document.getElementById('incorrectCount').textContent = incorrectAnswers;
+        }
+
+        function submitGuess() {
+            const guess = document.getElementById('guessInput').value.trim();
+            if (!guess) {
+                alert('Please enter a guess!');
+                return;
+            }
+
+            // Get list of valid names
+            const validNames = [...new Set(photoData.map(photo => photo.answer))];
+
+            // Check if guess is in the valid list (case-insensitive)
+            const isValidName = validNames.some(name => name.toLowerCase() === guess.toLowerCase());
+
+            if (!isValidName) {
+                alert(`"${guess}" is not a valid name. Please choose from the autocomplete list!`);
+                return;
+            }
+
+            // Stop the reveal animation
+            stopRevealAnimation();
+
+            // Calculate elapsed time for this photo
+            let elapsedTime = Date.now() - photoStartTime;
+
+            const photo = photoData[currentPhotoIndex];
+            const correctAnswer = photo.answer;
+
+            const feedback = document.getElementById('feedback');
+
+            // Check answer (case-insensitive)
+            const isCorrect = guess.toLowerCase() === correctAnswer.toLowerCase();
+
+            // Add penalty for wrong answer
+            if (!isCorrect) {
+                elapsedTime += 15000; // Add 15 second penalty
+                feedback.textContent = `✗ Not quite! It's ${correctAnswer} (+15 second penalty)`;
+                feedback.className = 'feedback incorrect';
+                incorrectAnswers++;
+            } else {
+                feedback.textContent = `✓ Correct! It's ${correctAnswer}!`;
+                feedback.className = 'feedback correct';
+                correctAnswers++;
+            }
+
+            // Add to total time
+            totalTime += elapsedTime;
+
+            // Update displays
+            document.getElementById('totalTimeDisplay').textContent = (totalTime / 1000).toFixed(1) + 's';
+
+            // Reveal the photo
+            isBlurred = false;
+            drawPhoto();
+
+            document.getElementById('guessInput').disabled = true;
+            document.getElementById('guessBtn').disabled = true;
+            document.getElementById('nextBtn').style.display = 'inline-block';
+            document.getElementById('hintBtn').style.display = 'none';
+
+            updateProgress();
+        }
+
+        function showHint() {
+            if (currentHintShown) return;
+
+            const photo = photoData[currentPhotoIndex];
+            const correctAnswer = photo.answer;
+
+            // Show first letter as hint
+            const hint = `Hint: The name starts with "${correctAnswer[0]}" and has ${correctAnswer.length} letters`;
+            document.getElementById('hintText').textContent = hint;
+            currentHintShown = true;
+        }
+
+        function nextPhoto() {
+            currentPhotoIndex++;
+            loadPhoto();
+            // Refocus input for next guess
+            setTimeout(() => {
+                document.getElementById('guessInput').focus();
+            }, 100);
+        }
+
+        async function showGameOver() {
+            const carterCorrect = correctAnswers;
+            const carterTime = totalTime / 1000; // Convert to seconds
+
+            document.getElementById('gameOver').classList.add('show');
+            document.getElementById('overlay').classList.add('show');
+
+            const content = document.getElementById('gameOverContent');
+
+            // Wait helper
+            const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+            // Check if Carter has best accuracy and time
+            const bestAccuracy = Math.max(...previousResults.map(r => r.correct));
+            const carterBestAccuracy = carterCorrect > bestAccuracy;
+            const bestTime = Math.min(...previousResults.map(r => r.time));
+            const carterBestTime = carterTime < bestTime;
+
+            // ==================== SCREEN 1: ACCURACY ====================
+            content.innerHTML = '';
+            const intro = document.createElement('p');
+            intro.textContent = "Let's see how you did compared to everyone else...";
+            content.appendChild(intro);
+            await wait(2000);
+
+            const accuracySection = document.createElement('div');
+            accuracySection.innerHTML = '<h3 style="color: white; margin-top: 30px;">ACCURACY RESULTS</h3>';
+            content.appendChild(accuracySection);
+            await wait(1000);
+
+            const accuracyTable = document.createElement('div');
+            accuracyTable.className = 'results-table';
+            accuracyTable.innerHTML = '<div class="result-row header"><div>Name</div><div>Correct</div><div>Out of</div></div>';
+            accuracySection.appendChild(accuracyTable);
+            await wait(500);
+
+            // Build full leaderboard with Carter included, sorted BEST to WORST
+            const allAccuracyResults = [...previousResults, { name: 'YOU', correct: carterCorrect, time: carterTime }];
+            const sortedWithCarter = allAccuracyResults.sort((a, b) => b.correct - a.correct);
+
+            // Create all rows with blank names first (all look the same initially)
+            const accuracyRows = [];
+            for (let i = 0; i < sortedWithCarter.length; i++) {
+                const result = sortedWithCarter[i];
+                const row = document.createElement('div');
+                row.className = 'result-row normal'; // All normal initially
+                row.innerHTML = `<div class="name-placeholder"></div><div>${result.correct}</div><div>30</div>`;
+                accuracyTable.appendChild(row);
+                accuracyRows.push({ row, result });
+            }
+            await wait(1000);
+
+            // Fill in names from bottom to top
+            for (let i = accuracyRows.length - 1; i >= 0; i--) {
+                const { row, result } = accuracyRows[i];
+                const namePlaceholder = row.querySelector('.name-placeholder');
+                namePlaceholder.textContent = result.name;
+
+                // Highlight Carter's row when revealed
+                if (result.name === 'YOU') {
+                    row.className = 'result-row carter';
+                }
+
+                await wait(800);
+            }
+
+            await wait(1500);
+
+            const accuracyVerdict = document.createElement('p');
+            accuracyVerdict.style.fontSize = '1.5em';
+            accuracyVerdict.style.marginTop = '20px';
+            if (carterBestAccuracy) {
+                accuracyVerdict.innerHTML = `🎯 <strong>BEST ACCURACY!</strong> You got ${carterCorrect}/30!`;
+                accuracyVerdict.style.color = '#4ade80';
+            } else {
+                accuracyVerdict.innerHTML = `You got ${carterCorrect}/30 (Best was ${bestAccuracy}/30)`;
+                accuracyVerdict.style.color = '#fbbf24';
+            }
+            content.appendChild(accuracyVerdict);
+            await wait(3000);
+
+            // ==================== SCREEN 2: SPEED ====================
+            content.innerHTML = '';
+            const timeSection = document.createElement('div');
+            timeSection.innerHTML = '<h3 style="color: white; margin-top: 30px;">SPEED RESULTS</h3>';
+            content.appendChild(timeSection);
+            await wait(1000);
+
+            const timeTable = document.createElement('div');
+            timeTable.className = 'results-table';
+            timeTable.innerHTML = '<div class="result-row header"><div>Name</div><div>Time (seconds)</div><div>Rank</div></div>';
+            timeSection.appendChild(timeTable);
+            await wait(500);
+
+            // Build full leaderboard with Carter included, sorted FASTEST to SLOWEST
+            const allTimeResults = [...previousResults, { name: 'YOU', correct: carterCorrect, time: carterTime }];
+            const sortedTimeWithCarter = allTimeResults.sort((a, b) => a.time - b.time);
+
+            // Create all rows with blank names first (all look the same initially)
+            const timeRows = [];
+            for (let i = 0; i < sortedTimeWithCarter.length; i++) {
+                const result = sortedTimeWithCarter[i];
+                const rank = i + 1;
+                const row = document.createElement('div');
+                row.className = 'result-row normal'; // All normal initially
+                row.innerHTML = `<div class="name-placeholder"></div><div>${result.time.toFixed(1)}s</div><div>#${rank}</div>`;
+                timeTable.appendChild(row);
+                timeRows.push({ row, result });
+            }
+            await wait(1000);
+
+            // Fill in names from bottom to top
+            for (let i = timeRows.length - 1; i >= 0; i--) {
+                const { row, result } = timeRows[i];
+                const namePlaceholder = row.querySelector('.name-placeholder');
+                namePlaceholder.textContent = result.name;
+
+                // Highlight Carter's row when revealed
+                if (result.name === 'YOU') {
+                    row.className = 'result-row carter';
+                }
+
+                await wait(800);
+            }
+
+            await wait(1500);
+
+            const timeVerdict = document.createElement('p');
+            timeVerdict.style.fontSize = '1.5em';
+            timeVerdict.style.marginTop = '20px';
+            if (carterBestTime) {
+                timeVerdict.innerHTML = `⚡ <strong>FASTEST TIME!</strong> You finished in ${carterTime.toFixed(1)}s!`;
+                timeVerdict.style.color = '#4ade80';
+            } else {
+                timeVerdict.innerHTML = `You finished in ${carterTime.toFixed(1)}s (Best was ${bestTime}s)`;
+                timeVerdict.style.color = '#fbbf24';
+            }
+            content.appendChild(timeVerdict);
+            await wait(3000);
+
+            // ==================== SCREEN 3: FINAL VERDICT ====================
+            content.innerHTML = '';
+            const finalVerdict = document.createElement('div');
+            finalVerdict.style.marginTop = '40px';
+
+            if (carterBestAccuracy && carterBestTime) {
+                finalVerdict.innerHTML = `
+                    <div class="answer">🏆 CHAMPION! 🏆</div>
+                    <p style="font-size: 1.8em; color: #4ade80;">Congratulations! You can now open your presents!</p>
+                `;
+            } else {
+                const missing = [];
+                if (!carterBestAccuracy) missing.push('accuracy');
+                if (!carterBestTime) missing.push('speed');
+
+                finalVerdict.innerHTML = `
+                    <p style="font-size: 1.8em; color: #fbbf24;">So close! You need to beat everyone in both ${missing.join(' and ')}!</p>
+                    <p style="font-size: 1.3em; color: white; margin-top: 20px;">Refresh this page to try again.</p>
+                `;
+            }
+            content.appendChild(finalVerdict);
+        }
+
+        // Allow Enter key to submit guess (from input field)
+        document.getElementById('guessInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !document.getElementById('guessBtn').disabled) {
+                submitGuess();
+            }
+        });
+
+        // Allow Enter key to advance to next photo (from anywhere)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && document.getElementById('nextBtn').style.display !== 'none') {
+                nextPhoto();
+            }
+        });
+
+        // Populate autocomplete datalist with unique names from ALL photos
+        function populateNamesList() {
+            const uniqueNames = [...new Set(allPhotoData.map(photo => photo.answer))].sort();
+            const datalist = document.getElementById('namesList');
+
+            uniqueNames.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                datalist.appendChild(option);
+            });
+
+            console.log(`Autocomplete loaded with ${uniqueNames.length} unique names:`, uniqueNames);
+        }
+
+        // Initialize autocomplete and start the game
+        populateNamesList();
+        loadPhoto();
+
+        // Focus the input field when ready
+        window.addEventListener('load', () => {
+            document.getElementById('guessInput').focus();
+        });
+    </script>
+</body>
+</html>
