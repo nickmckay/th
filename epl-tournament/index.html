@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPL Tournament Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #37003c 0%, #e90052 100%);
+            min-height: 100vh;
+            padding: 0;
+            color: #333;
+        }
+
+        .banner {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .page-title {
+            text-align: center;
+            color: white;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+            margin: 20px 0;
+            padding: 0 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+
+        .instructions h2 {
+            color: #38003c;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .bracket-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow-x: auto;
+        }
+
+        .bracket {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            min-width: 700px;
+        }
+
+        .round {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            min-height: 600px;
+        }
+
+        .round-title {
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 8px;
+            background: linear-gradient(135deg, #e90052, #37003c);
+            border-radius: 8px;
+            color: white;
+        }
+
+        .matchup {
+            background: white;
+            border: 3px solid #37003c;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .team {
+            padding: 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .team:hover {
+            transform: translateX(5px);
+            border-color: #37003c;
+            background: linear-gradient(135deg, #e9ecef, #dee2e6);
+        }
+
+        .team.selected {
+            background: linear-gradient(135deg, #e90052, #c7004c);
+            font-weight: bold;
+            border-color: #37003c;
+            box-shadow: 0 4px 8px rgba(233, 0, 82, 0.4);
+            color: white;
+        }
+
+        .team.eliminated {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #ddd;
+        }
+
+        .team.eliminated:hover {
+            transform: none;
+            border-color: transparent;
+        }
+
+        .team-logo {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+        }
+
+        .team-name {
+            flex: 1;
+            font-size: 0.95em;
+        }
+
+
+        .connector {
+            border-top: 2px solid #37003c;
+            position: relative;
+            height: 2px;
+            margin: 15px 0;
+        }
+
+        .final-matchup {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: 4px solid #37003c;
+        }
+
+        .champion-slot {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: 4px solid #37003c;
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #37003c;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .guess-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .guess-section h2 {
+            color: #37003c;
+            margin-bottom: 15px;
+        }
+
+        .guess-input {
+            padding: 12px;
+            font-size: 1.1em;
+            border: 3px solid #37003c;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .submit-btn {
+            padding: 12px 35px;
+            font-size: 1.1em;
+            background: #37003c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: #5a0060;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            min-height: 35px;
+        }
+
+        .result.correct {
+            color: #00ff87;
+        }
+
+        .result.incorrect {
+            color: #dc3545;
+        }
+
+        .final-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border: 6px solid #37003c;
+            z-index: 1000;
+            max-width: 90%;
+            width: 500px;
+        }
+
+        .final-message.show {
+            display: block;
+        }
+
+        .final-message h2 {
+            color: #37003c;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+        }
+
+        .final-message p {
+            font-size: 1.2em;
+            margin: 15px 0;
+            color: #333;
+        }
+
+        .final-message .location {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #37003c;
+            margin: 25px 0;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 1.8em;
+            }
+
+            .banner {
+                max-height: 150px;
+            }
+
+            .bracket {
+                min-width: 600px;
+            }
+
+            .team-name {
+                font-size: 0.85em;
+            }
+
+            .round-title {
+                font-size: 0.95em;
+            }
+
+            .team-logo {
+                width: 24px;
+                height: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+
+    <img src="Banner.webp" alt="Premier League" class="banner">
+    <div class="page-title">Premier League Christmas Tournament</div>
+
+    <div class="container">
+        <div class="instructions">
+            <p style="font-size: 1.1em; margin: 0;">Fill out the tournament bracket! Remember, it takes something new to win in each round.</p>
+        </div>
+
+        <div class="bracket-container">
+            <div class="bracket">
+                <!-- Quarter Finals -->
+                <div class="round">
+                    <div class="round-title">Quarter Finals</div>
+                    <div class="matchup" data-match="qf1" data-round="qf">
+                        <div class="team" data-team="Tottenham Hotspur" onclick="selectWinner('qf1', 'Tottenham Hotspur')">
+                            <img src="logos/tottenham.png" class="team-logo" alt="Tottenham">
+                            <div class="team-name">Tottenham Hotspur</div>
+                        </div>
+                        <div class="team" data-team="Chelsea" onclick="selectWinner('qf1', 'Chelsea')">
+                            <img src="logos/chelsea.png" class="team-logo" alt="Chelsea">
+                            <div class="team-name">Chelsea</div>
+                        </div>
+                    </div>
+                    <div class="matchup" data-match="qf2" data-round="qf">
+                        <div class="team" data-team="Manchester United" onclick="selectWinner('qf2', 'Manchester United')">
+                            <img src="logos/manutd.png" class="team-logo" alt="Man Utd">
+                            <div class="team-name">Manchester United</div>
+                        </div>
+                        <div class="team" data-team="Arsenal" onclick="selectWinner('qf2', 'Arsenal')">
+                            <img src="logos/arsenal.png" class="team-logo" alt="Arsenal">
+                            <div class="team-name">Arsenal</div>
+                        </div>
+                    </div>
+                    <div class="matchup" data-match="qf3" data-round="qf">
+                        <div class="team" data-team="Newcastle United" onclick="selectWinner('qf3', 'Newcastle United')">
+                            <img src="logos/newcastle.png" class="team-logo" alt="Newcastle">
+                            <div class="team-name">Newcastle United</div>
+                        </div>
+                        <div class="team" data-team="Liverpool" onclick="selectWinner('qf3', 'Liverpool')">
+                            <img src="logos/liverpool.png" class="team-logo" alt="Liverpool">
+                            <div class="team-name">Liverpool</div>
+                        </div>
+                    </div>
+                    <div class="matchup" data-match="qf4" data-round="qf">
+                        <div class="team" data-team="Aston Villa" onclick="selectWinner('qf4', 'Aston Villa')">
+                            <img src="logos/astonvilla.png" class="team-logo" alt="Aston Villa">
+                            <div class="team-name">Aston Villa</div>
+                        </div>
+                        <div class="team" data-team="Manchester City" onclick="selectWinner('qf4', 'Manchester City')">
+                            <img src="logos/mancity.png" class="team-logo" alt="Man City">
+                            <div class="team-name">Manchester City</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Semi Finals -->
+                <div class="round">
+                    <div class="round-title">Semi Finals</div>
+                    <div class="matchup" data-match="sf1" data-round="sf">
+                        <div class="team" data-team="" onclick="selectWinner('sf1', this.dataset.team)">
+                            <div class="team-name">TBD</div>
+                        </div>
+                        <div class="team" data-team="" onclick="selectWinner('sf1', this.dataset.team)">
+                            <div class="team-name">TBD</div>
+                        </div>
+                    </div>
+                    <div class="matchup" data-match="sf2" data-round="sf">
+                        <div class="team" data-team="" onclick="selectWinner('sf2', this.dataset.team)">
+                            <div class="team-name">TBD</div>
+                        </div>
+                        <div class="team" data-team="" onclick="selectWinner('sf2', this.dataset.team)">
+                            <div class="team-name">TBD</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Championship -->
+                <div class="round">
+                    <div class="round-title">Championship</div>
+                    <div class="matchup final-matchup" data-match="final" data-round="final">
+                        <div class="team" data-team="" onclick="selectWinner('final', this.dataset.team)">
+                            <div class="team-name">TBD</div>
+                        </div>
+                        <div class="team" data-team="" onclick="selectWinner('final', this.dataset.team)">
+                            <div class="team-name">TBD</div>
+                        </div>
+                    </div>
+                    <div class="champion-slot" id="championSlot">
+                        🏆 ??? 🏆
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="guess-section">
+            <h2>Submit Your Bracket</h2>
+            <p>Complete the bracket above, then submit to see which games you got right!</p>
+            <button class="submit-btn" id="submitBtn" onclick="submitBracket()">Submit Tournament Bracket</button>
+            <div class="result" id="result"></div>
+        </div>
+    </div>
+
+    <div class="final-message" id="finalMessage">
+        <h2>🏆 Correct! 🏆</h2>
+        <p>You've successfully predicted the tournament winner!</p>
+        <p>Your next clue:</p>
+        <div class="location" id="nextLocation">Look behind the games</div>
+    </div>
+
+    <script>
+        const NEXT_LOCATION = "Look behind the games";
+
+        const teamLogos = {
+            "Tottenham Hotspur": "logos/tottenham.png",
+            "Manchester United": "logos/manutd.png",
+            "Newcastle United": "logos/newcastle.png",
+            "Manchester City": "logos/mancity.png",
+            "Aston Villa": "logos/astonvilla.png",
+            "Liverpool": "logos/liverpool.png",
+            "Arsenal": "logos/arsenal.png",
+            "Chelsea": "logos/chelsea.png"
+        };
+
+        const teamPoints = {
+            "Arsenal": 39,
+            "Manchester City": 37,
+            "Aston Villa": 36,
+            "Chelsea": 29,
+            "Liverpool": 29,
+            "Manchester United": 26,
+            "Newcastle United": 23,
+            "Tottenham Hotspur": 23
+        };
+
+        let selections = {};
+        let scoresRevealed = false;
+
+        function getScore(teamName, round) {
+            if (round === 'qf') {
+                // Quarter Finals: name length
+                return teamName.length;
+            } else if (round === 'sf') {
+                // Semi Finals: first letter position (A=1, B=2, etc.)
+                return teamName.charAt(0).toUpperCase().charCodeAt(0) - 64;
+            } else if (round === 'final') {
+                // Championship: current points
+                return teamPoints[teamName] || 0;
+            }
+            return 0;
+        }
+
+        function selectWinner(matchId, team) {
+            if (!team) return;
+
+            const matchup = document.querySelector(`[data-match="${matchId}"]`);
+            const teams = matchup.querySelectorAll('.team');
+
+            // Clear previous selection
+            teams.forEach(t => {
+                t.classList.remove('selected');
+                t.classList.remove('eliminated');
+            });
+
+            // Mark winner and loser
+            teams.forEach(t => {
+                if (t.dataset.team === team) {
+                    t.classList.add('selected');
+                } else {
+                    t.classList.add('eliminated');
+                }
+            });
+
+            // Store selection
+            selections[matchId] = team;
+
+            // Advance winner
+            advanceWinner(matchId, team);
+        }
+
+        function advanceWinner(matchId, winner) {
+            let nextMatch, position;
+
+            // Quarter finals to semi finals
+            if (matchId === 'qf1') {
+                nextMatch = 'sf1';
+                position = 0;
+            } else if (matchId === 'qf2') {
+                nextMatch = 'sf1';
+                position = 1;
+            } else if (matchId === 'qf3') {
+                nextMatch = 'sf2';
+                position = 0;
+            } else if (matchId === 'qf4') {
+                nextMatch = 'sf2';
+                position = 1;
+            }
+            // Semi finals to final
+            else if (matchId === 'sf1') {
+                nextMatch = 'final';
+                position = 0;
+            } else if (matchId === 'sf2') {
+                nextMatch = 'final';
+                position = 1;
+            }
+            // Final to champion
+            else if (matchId === 'final') {
+                displayChampion(winner);
+                return;
+            }
+
+            // Update next match
+            const nextMatchup = document.querySelector(`[data-match="${nextMatch}"]`);
+            const teams = nextMatchup.querySelectorAll('.team');
+            const teamDiv = teams[position];
+
+            teamDiv.dataset.team = winner;
+            teamDiv.innerHTML = `
+                ${teamLogos[winner] ? `<img src="${teamLogos[winner]}" class="team-logo" alt="${winner}">` : ''}
+                <div class="team-name">${winner}</div>
+            `;
+            teamDiv.onclick = function() { selectWinner(nextMatch, winner); };
+
+            // Clear any previous selection in this match
+            if (selections[nextMatch]) {
+                delete selections[nextMatch];
+                teams.forEach(t => {
+                    t.classList.remove('selected');
+                    t.classList.remove('eliminated');
+                });
+            }
+        }
+
+        function displayChampion(winner) {
+            const championSlot = document.getElementById('championSlot');
+            championSlot.innerHTML = `🏆 ${winner} 🏆`;
+        }
+
+        function getCorrectWinner(matchup) {
+            const round = matchup.dataset.round;
+            const teams = matchup.querySelectorAll('.team');
+            const team1 = teams[0].dataset.team;
+            const team2 = teams[1].dataset.team;
+
+            if (!team1 || !team2) return null;
+
+            const score1 = getScore(team1, round);
+            const score2 = getScore(team2, round);
+
+            if (round === 'qf' || round === 'final' || round === 'sf') {
+                // Higher score wins
+                return score1 > score2 ? team1 : team2;
+            }
+        }
+
+        function submitBracket() {
+            const result = document.getElementById('result');
+            const champion = selections['final'];
+
+            if (!champion) {
+                alert('Please complete the bracket first!');
+                return;
+            }
+
+            // Check each matchup and count correct answers
+            scoresRevealed = true;
+            const allMatchups = document.querySelectorAll('.matchup');
+            let correctCount = 0;
+            let totalCount = 0;
+
+            allMatchups.forEach(matchup => {
+                const matchId = matchup.dataset.match;
+                const selectedWinner = selections[matchId];
+                const correctWinner = getCorrectWinner(matchup);
+
+                if (selectedWinner && correctWinner) {
+                    totalCount++;
+                    if (selectedWinner === correctWinner) {
+                        correctCount++;
+                    }
+                }
+            });
+
+            // Only show success if they got all 7 correct
+            if (correctCount === 7) {
+                result.textContent = `✓ Perfect! You got all ${correctCount} games correct!`;
+                result.className = 'result correct';
+
+                // Show final message
+                setTimeout(() => {
+                    document.getElementById('nextLocation').textContent = NEXT_LOCATION;
+                    document.getElementById('finalMessage').classList.add('show');
+                    document.getElementById('overlay').classList.add('show');
+                }, 1000);
+            } else {
+                result.textContent = `You got ${correctCount} out of ${totalCount} games correct. Try again!`;
+                result.className = 'result incorrect';
+            }
+
+            // Disable submit button
+            document.getElementById('submitBtn').disabled = true;
+        }
+    </script>
+</body>
+</html>
