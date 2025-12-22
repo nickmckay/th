@@ -209,10 +209,27 @@
             letter-spacing: 1px;
         }
 
-        button:hover {
+        button:hover:not(:disabled) {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 30px rgba(251, 191, 36, 0.5);
             background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        button:disabled {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            border-color: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .hint-button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #34d399;
+        }
+
+        .hint-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 30px rgba(16, 185, 129, 0.5);
         }
 
         .success-message {
@@ -285,6 +302,9 @@
         </div>
 
         <div class="controls">
+            <button class="hint-button" id="hintBtn" onclick="useHint()">
+                🎁 Get +0.5s Bonus (2 remaining)
+            </button>
             <button onclick="checkAnswers()">Check Answers</button>
             <button onclick="clearAll()">Clear All</button>
         </div>
@@ -426,6 +446,8 @@
         let audioPlayers = {};
         let correctCount = 0;
         let maxPlayTime = 1; // Starts at 1 second
+        let hintsUsed = 0; // Track number of hints used
+        let maxHints = 2; // Maximum hints allowed
 
         // Initialize the game
         function init() {
@@ -591,6 +613,7 @@
             userAnswers = {};
             correctCount = 0;
             maxPlayTime = 1;
+            hintsUsed = 0;
 
             for (let i = 1; i <= 12; i++) {
                 const input = document.getElementById(`input-${i}`);
@@ -605,6 +628,7 @@
 
             updateScore();
             updateTimeDisplay();
+            updateHintButton();
             document.getElementById('successMessage').classList.remove('show');
         }
 
@@ -618,6 +642,29 @@
         function updateTimeDisplay() {
             const timeDiv = document.getElementById('timeUnlock');
             timeDiv.textContent = `🎵 Current Audio Length: ${maxPlayTime} second${maxPlayTime !== 1 ? 's' : ''}`;
+        }
+
+        // Use hint to add 0.5 seconds
+        function useHint() {
+            if (hintsUsed < maxHints) {
+                hintsUsed++;
+                maxPlayTime += 0.5;
+                updateTimeDisplay();
+                updateHintButton();
+            }
+        }
+
+        // Update hint button text and state
+        function updateHintButton() {
+            const hintBtn = document.getElementById('hintBtn');
+            const remaining = maxHints - hintsUsed;
+
+            if (remaining > 0) {
+                hintBtn.textContent = `🎁 Get +0.5s Bonus (${remaining} remaining)`;
+            } else {
+                hintBtn.textContent = '🎁 No Bonuses Left';
+                hintBtn.disabled = true;
+            }
         }
 
         // Initialize on load
