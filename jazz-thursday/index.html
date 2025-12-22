@@ -32,11 +32,23 @@
             text-align: center;
             color: #fbbf24;
             font-size: 48px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-shadow: 2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(251, 191, 36, 0.5);
             font-weight: 700;
             letter-spacing: 3px;
             font-style: italic;
+        }
+
+        .instructions {
+            background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%);
+            color: #fef3c7;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 18px;
+            border: 2px solid #a855f7;
+            font-weight: normal;
         }
 
         .progress-info {
@@ -259,6 +271,10 @@
 <body>
     <div class="container">
         <h1>🎷 Name That Jazzy Christmas Tune 🎵</h1>
+
+        <div class="instructions">
+            Guess all the songs! Each song you get correctly gives you an extra 0.5 seconds of listening time
+        </div>
 
         <div class="progress-info">
             <div class="time-unlock" id="timeUnlock">🎵 Current Audio Length: 1 second</div>
