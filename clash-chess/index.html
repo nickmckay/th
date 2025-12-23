@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash Royale Chess</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial Black', 'Arial Bold', sans-serif;
+            background: url('../../cr-api-assets/maps/07-RoyalArena.png') center center / cover no-repeat fixed;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            background: linear-gradient(135deg, rgba(30, 36, 66, 0.95) 0%, rgba(42, 31, 74, 0.95) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 80px rgba(255, 165, 0, 0.4), inset 0 0 100px rgba(255, 165, 0, 0.05);
+            border: 4px solid #ffa500;
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+            font-size: 42px;
+            margin-bottom: 20px;
+            text-shadow:
+                3px 3px 0px #8b4513,
+                -1px -1px 0px #ffa500,
+                -1px 1px 0px #ffa500,
+                1px -1px 0px #ffa500,
+                1px 1px 0px #ffa500,
+                0 0 20px rgba(255, 165, 0, 0.8),
+                0 0 40px rgba(255, 165, 0, 0.5);
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .game-info {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            border: 2px solid #ffa500;
+            font-weight: bold;
+        }
+
+        .board-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .chess-board {
+            display: grid;
+            grid-template-columns: repeat(8, 80px);
+            grid-template-rows: repeat(8, 80px);
+            gap: 0;
+            border: 8px solid #8b4513;
+            box-shadow:
+                0 0 0 2px #d97706,
+                0 0 0 4px #8b4513,
+                0 10px 40px rgba(0,0,0,0.8),
+                inset 0 0 30px rgba(0,0,0,0.3);
+            border-radius: 4px;
+        }
+
+        .square {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .square.light {
+            background: #e8d5b7;
+        }
+
+        .square.dark {
+            background: #8b6f47;
+        }
+
+        .square:hover {
+            filter: brightness(1.2);
+        }
+
+        .square.selected {
+            box-shadow: inset 0 0 0 4px #ffa500;
+            filter: brightness(1.3);
+        }
+
+        .square.valid-move {
+            background-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .square.valid-move::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(34, 197, 94, 0.6);
+            border-radius: 50%;
+        }
+
+        .piece {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .piece.blue-team {
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8));
+        }
+
+        .piece.red-team {
+            filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.8));
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(to bottom, #ffa726 0%, #f57c00 50%, #e65100 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 900;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            box-shadow:
+                0 6px 0 #8b4513,
+                0 8px 20px rgba(0,0,0,0.5),
+                inset 0 2px 0 rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        button:hover {
+            background: linear-gradient(to bottom, #ffb74d 0%, #fb8c00 50%, #ef6c00 100%);
+            transform: translateY(-2px);
+            box-shadow:
+                0 8px 0 #8b4513,
+                0 10px 25px rgba(255, 165, 0, 0.6),
+                inset 0 2px 0 rgba(255,255,255,0.3);
+        }
+
+        button:active {
+            transform: translateY(4px);
+            box-shadow:
+                0 2px 0 #8b4513,
+                0 4px 10px rgba(0,0,0,0.5),
+                inset 0 2px 0 rgba(255,255,255,0.3);
+        }
+
+        .status-message {
+            display: none; /* Hidden - no hints for Micah! */
+        }
+
+        .success-message {
+            background: linear-gradient(to bottom, rgba(255, 215, 0, 0.95) 0%, rgba(255, 165, 0, 0.95) 100%);
+            color: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+            border: 5px solid #8b4513;
+            box-shadow:
+                0 0 0 3px #ffa500,
+                0 10px 40px rgba(255, 165, 0, 0.8),
+                inset 0 -5px 20px rgba(0,0,0,0.2);
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.5s ease, victoryPulse 2s ease-in-out infinite;
+        }
+
+        .success-message h2 {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #fff;
+            text-shadow:
+                3px 3px 0px #8b4513,
+                -1px -1px 0px #8b4513,
+                -1px 1px 0px #8b4513,
+                1px -1px 0px #8b4513,
+                1px 1px 0px #8b4513,
+                0 0 20px rgba(255, 215, 0, 1);
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes victoryPulse {
+            0%, 100% {
+                box-shadow:
+                    0 0 0 3px #ffa500,
+                    0 10px 40px rgba(255, 165, 0, 0.8),
+                    inset 0 -5px 20px rgba(0,0,0,0.2);
+            }
+            50% {
+                box-shadow:
+                    0 0 0 3px #ffd700,
+                    0 10px 60px rgba(255, 215, 0, 1),
+                    inset 0 -5px 20px rgba(0,0,0,0.2);
+            }
+        }
+
+        .turn-indicator {
+            font-size: 20px;
+            margin: 15px 0;
+            padding: 12px 25px;
+            text-align: center;
+            color: #86efac;
+            font-weight: bold;
+            background: linear-gradient(to bottom, rgba(74, 53, 40, 0.9) 0%, rgba(50, 35, 25, 0.95) 100%);
+            border-radius: 12px;
+            border: 3px solid #d97706;
+            box-shadow:
+                0 0 0 2px rgba(255, 165, 0, 0.3),
+                0 6px 20px rgba(0,0,0,0.6),
+                inset 0 2px 0 rgba(255,255,255,0.1);
+        }
+
+        .turn-indicator .current-turn {
+            color: #ffd700;
+            font-size: 26px;
+            text-shadow:
+                2px 2px 0px #8b4513,
+                0 0 10px rgba(255, 215, 0, 0.6);
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .rules-panel {
+            background: linear-gradient(to bottom, rgba(74, 53, 40, 0.95) 0%, rgba(40, 28, 20, 0.98) 100%);
+            border: 3px solid #d97706;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            box-shadow:
+                0 0 0 2px rgba(255, 165, 0, 0.3),
+                0 8px 25px rgba(0,0,0,0.7),
+                inset 0 2px 0 rgba(255,255,255,0.1);
+        }
+
+        .rules-panel h3 {
+            color: #ffd700;
+            font-size: 22px;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow:
+                2px 2px 0px #8b4513,
+                0 0 15px rgba(255, 215, 0, 0.5);
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .rules-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rules-list li {
+            background: linear-gradient(to right, rgba(255, 165, 0, 0.15) 0%, rgba(255, 165, 0, 0.05) 100%);
+            border-left: 5px solid #ffa726;
+            padding: 12px 15px;
+            margin-bottom: 12px;
+            color: #f5deb3;
+            font-size: 14px;
+            line-height: 1.6;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+        }
+
+        .rules-list li:hover {
+            background: linear-gradient(to right, rgba(255, 165, 0, 0.2) 0%, rgba(255, 165, 0, 0.08) 100%);
+            transform: translateX(5px);
+        }
+
+        .rules-list li strong {
+            color: #ffd700;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 15px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .rules-panel.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚔️ Clash Royale Chess ⚔️</h1>
+
+        <div class="turn-indicator">
+            <span class="current-turn" id="turnIndicator">Blue's Turn</span>
+        </div>
+
+        <div class="board-container">
+            <div class="chess-board" id="chessBoard"></div>
+        </div>
+
+        <div class="controls">
+            <button onclick="resetGame()">New Game</button>
+        </div>
+
+        <div class="status-message" id="statusMessage">
+            Select a piece to move
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <h2>🎉 VICTORY! 🎉</h2>
+            <p style="font-size: 20px;">You've mastered the Clash Chess rules!</p>
+            <p style="margin-top: 20px; font-size: 18px;">Your next clue is: <strong>[LOCATION TO BE ADDED]</strong></p>
+        </div>
+
+        <div class="rules-panel hidden" id="rulesPanel">
+            <h3>📜 Discovered Rules</h3>
+            <ul class="rules-list" id="rulesList"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let board = [];
+        let selectedSquare = null;
+        let currentTurn = 'blue'; // blue or red
+        let gameOver = false;
+        let revealedRulesCount = 0; // Reset on page refresh
+
+        // Rules reveal system
+        const ALL_RULES = [
+            {
+                title: "Buildings Cannot Move",
+                description: "Cannon, Tesla, Inferno Tower, and X-Bow are locked in place and cannot move (but can still attack)."
+            },
+            {
+                title: "Flying Units Jump Over Pieces",
+                description: "Minions, Bats, and Mega Minion can fly over other pieces and ignore path blocking."
+            },
+            {
+                title: "Melee vs Ranged Attacks",
+                description: "Melee units can only attack adjacent squares (distance 1), while ranged units can attack up to 2 squares away."
+            },
+            {
+                title: "Movement Based on Elixir Cost",
+                description: "Kings (0 elixir): 1 square | Cheap cards (1-3 elixir): up to 3 squares | Medium cards (4-6 elixir): up to 2 squares | Expensive cards (7+ elixir): 1 square only."
+            },
+            {
+                title: "Path Blocking",
+                description: "Ground units need a clear path to move (cannot jump over pieces). Flying units ignore this."
+            },
+            {
+                title: "Elixir-Based Capture Rule",
+                description: "You can ONLY capture pieces with HIGHER elixir cost than your attacking piece. Example: 3-elixir Knight can capture 4+ elixir pieces, but NOT 3-elixir or lower."
+            },
+            {
+                title: "Kings Can Capture Anyone",
+                description: "Kings (0 elixir) are special and can capture ANY piece regardless of elixir cost."
+            },
+            {
+                title: "Only 5+ Elixir Can Capture Kings",
+                description: "Only pieces with 5 or more elixir can capture the enemy king (Prince, Wizard, Barbarians, PEKKA, Mega Knight, Ram Rider, etc.)."
+            }
+        ];
+
+        function getRevealedRulesCount() {
+            return revealedRulesCount;
+        }
+
+        function setRevealedRulesCount(count) {
+            revealedRulesCount = count;
+        }
+
+        function revealNewRule() {
+            let currentCount = getRevealedRulesCount();
+            if (currentCount < ALL_RULES.length) {
+                currentCount++;
+                setRevealedRulesCount(currentCount);
+                displayRevealedRules();
+            }
+        }
+
+        function displayRevealedRules() {
+            const count = getRevealedRulesCount();
+            const rulesPanel = document.getElementById('rulesPanel');
+            const rulesList = document.getElementById('rulesList');
+
+            if (count === 0) {
+                rulesPanel.classList.add('hidden');
+                return;
+            }
+
+            rulesPanel.classList.remove('hidden');
+            rulesList.innerHTML = '';
+
+            for (let i = 0; i < count; i++) {
+                const rule = ALL_RULES[i];
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${rule.title}</strong>${rule.description}`;
+                rulesList.appendChild(li);
+            }
+        }
+
+        // Audio system
+        const backgroundMusic = new Audio('../../cr-api-assets/music/2min_loop_battle_01.ogg');
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = 0.3;
+
+        // Start background music on first user interaction
+        let musicStarted = false;
+        function startMusic() {
+            if (!musicStarted) {
+                backgroundMusic.play().catch(e => console.log('Audio autoplay prevented'));
+                musicStarted = true;
+            }
+        }
+
+        // Sound effects mapping - using files that actually exist
+        const soundEffects = {
+            'move': '../../cr-api-assets/sfx/building_place_01.ogg',
+            'capture': '../../cr-api-assets/sfx/building_destroyed_05.ogg',
+            'blocked': '../../cr-api-assets/sfx/dark_prince_shield_01.ogg',
+            'invalid': '../../cr-api-assets/sfx/button_click_02.ogg',
+            'victory': '../../cr-api-assets/sfx/3rd_crown_01.ogg'
+        };
+
+        function playSound(soundKey) {
+            const soundPath = soundEffects[soundKey];
+            if (soundPath) {
+                const audio = new Audio(soundPath);
+                audio.volume = 0.5;
+                audio.play().catch(e => console.log('Sound effect failed to play:', e));
+            }
+        }
+
+        // Card definitions - 32 unique cards with properties
+        const CARD_DATA = {
+            // Blue team (16 unique cards)
+            'king': { image: 'golden-knight.png', elixir: 0, type: 'ground', range: 'melee', canMove: true },
+            'queen': { image: 'pekka.png', elixir: 7, type: 'ground', range: 'melee', canMove: true },
+            'rook1': { image: 'cannon.png', elixir: 3, type: 'building', range: 'ranged', canMove: false },
+            'rook2': { image: 'tesla.png', elixir: 4, type: 'building', range: 'ranged', canMove: false },
+            'knight1': { image: 'prince.png', elixir: 5, type: 'ground', range: 'melee', canMove: true },
+            'knight2': { image: 'mega-knight.png', elixir: 7, type: 'ground', range: 'melee', canMove: true },
+            'bishop1': { image: 'wizard.png', elixir: 5, type: 'ground', range: 'ranged', canMove: true },
+            'bishop2': { image: 'ram-rider.png', elixir: 5, type: 'ground', range: 'ranged', canMove: true },
+            'pawn1': { image: 'knight.png', elixir: 3, type: 'ground', range: 'melee', canMove: true },
+            'pawn2': { image: 'archers.png', elixir: 3, type: 'ground', range: 'ranged', canMove: true },
+            'pawn3': { image: 'goblins.png', elixir: 2, type: 'ground', range: 'melee', canMove: true },
+            'pawn4': { image: 'spear-goblins.png', elixir: 2, type: 'ground', range: 'ranged', canMove: true },
+            'pawn5': { image: 'skeletons.png', elixir: 1, type: 'ground', range: 'melee', canMove: true },
+            'pawn6': { image: 'barbarians.png', elixir: 5, type: 'ground', range: 'melee', canMove: true },
+            'pawn7': { image: 'minions.png', elixir: 3, type: 'flying', range: 'ranged', canMove: true },
+            'pawn8': { image: 'fire-spirits.png', elixir: 1, type: 'ground', range: 'melee', canMove: true },
+
+            // Red team (16 unique cards)
+            'king-r': { image: 'skeleton-king.png', elixir: 0, type: 'ground', range: 'melee', canMove: true },
+            'queen-r': { image: 'valkyrie.png', elixir: 4, type: 'ground', range: 'melee', canMove: true },
+            'rook1-r': { image: 'inferno-tower.png', elixir: 5, type: 'building', range: 'ranged', canMove: false },
+            'rook2-r': { image: 'x-bow.png', elixir: 6, type: 'building', range: 'ranged', canMove: false },
+            'knight1-r': { image: 'dark-prince.png', elixir: 4, type: 'ground', range: 'melee', canMove: true },
+            'knight2-r': { image: 'musketeer.png', elixir: 4, type: 'ground', range: 'ranged', canMove: true },
+            'bishop1-r': { image: 'electro-wizard.png', elixir: 4, type: 'ground', range: 'ranged', canMove: true },
+            'bishop2-r': { image: 'ice-wizard.png', elixir: 3, type: 'ground', range: 'ranged', canMove: true },
+            'pawn1-r': { image: 'royal-recruits.png', elixir: 7, type: 'ground', range: 'melee', canMove: true },
+            'pawn2-r': { image: 'elite-barbarians.png', elixir: 6, type: 'ground', range: 'melee', canMove: true },
+            'pawn3-r': { image: 'rascals.png', elixir: 5, type: 'ground', range: 'melee', canMove: true },
+            'pawn4-r': { image: 'guards.png', elixir: 3, type: 'ground', range: 'melee', canMove: true },
+            'pawn5-r': { image: 'bats.png', elixir: 2, type: 'flying', range: 'melee', canMove: true },
+            'pawn6-r': { image: 'skeleton-army.png', elixir: 3, type: 'ground', range: 'melee', canMove: true },
+            'pawn7-r': { image: 'mega-minion.png', elixir: 3, type: 'flying', range: 'ranged', canMove: true },
+            'pawn8-r': { image: 'goblin-gang.png', elixir: 3, type: 'ground', range: 'melee', canMove: true }
+        };
+
+        // Initialize the game
+        function initGame() {
+            createBoard();
+            setupPieces();
+            renderBoard();
+            displayRevealedRules();
+        }
+
+        // Create empty board
+        function createBoard() {
+            board = [];
+            for (let row = 0; row < 8; row++) {
+                board[row] = [];
+                for (let col = 0; col < 8; col++) {
+                    board[row][col] = null;
+                }
+            }
+        }
+
+        // Setup initial piece positions
+        function setupPieces() {
+            // Red team (top) - row 0 and 1
+            const redBackRow = ['rook1-r', 'knight1-r', 'bishop1-r', 'queen-r', 'king-r', 'bishop2-r', 'knight2-r', 'rook2-r'];
+            for (let col = 0; col < 8; col++) {
+                const cardId = redBackRow[col];
+                board[0][col] = {
+                    team: 'red',
+                    pieceId: cardId,  // Store the piece identifier separately
+                    ...CARD_DATA[cardId]
+                };
+                const pawnId = `pawn${col + 1}-r`;
+                board[1][col] = {
+                    team: 'red',
+                    pieceId: pawnId,
+                    ...CARD_DATA[pawnId]
+                };
+            }
+
+            // Blue team (bottom) - row 6 and 7
+            const blueBackRow = ['rook1', 'knight1', 'bishop1', 'queen', 'king', 'bishop2', 'knight2', 'rook2'];
+            for (let col = 0; col < 8; col++) {
+                const pawnId = `pawn${col + 1}`;
+                board[6][col] = {
+                    team: 'blue',
+                    pieceId: pawnId,
+                    ...CARD_DATA[pawnId]
+                };
+                const cardId = blueBackRow[col];
+                board[7][col] = {
+                    team: 'blue',
+                    pieceId: cardId,
+                    ...CARD_DATA[cardId]
+                };
+            }
+        }
+
+        // Render the board
+        function renderBoard() {
+            const boardElement = document.getElementById('chessBoard');
+            boardElement.innerHTML = '';
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = `square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
+                    square.dataset.row = row;
+                    square.dataset.col = col;
+
+                    if (selectedSquare && selectedSquare.row === row && selectedSquare.col === col) {
+                        square.classList.add('selected');
+                    }
+
+                    const piece = board[row][col];
+                    if (piece) {
+                        const img = document.createElement('img');
+                        img.src = `../../cr-api-assets/cards/${piece.image}`;
+                        img.className = `piece ${piece.team}-team`;
+                        img.alt = piece.pieceId;
+                        square.appendChild(img);
+                    }
+
+                    square.addEventListener('click', () => handleSquareClick(row, col));
+                    boardElement.appendChild(square);
+                }
+            }
+        }
+
+        // Handle square clicks
+        function handleSquareClick(row, col) {
+            if (gameOver) return;
+
+            // Start background music on first click
+            startMusic();
+
+            const piece = board[row][col];
+
+            // If no piece selected, select this piece if it's the current player's
+            if (!selectedSquare) {
+                if (piece && piece.team === currentTurn) {
+                    selectedSquare = { row, col };
+                    renderBoard();
+                }
+            } else {
+                // Try to move the selected piece
+                if (selectedSquare.row === row && selectedSquare.col === col) {
+                    // Deselect
+                    selectedSquare = null;
+                    renderBoard();
+                } else {
+                    attemptMove(selectedSquare.row, selectedSquare.col, row, col);
+                }
+            }
+        }
+
+        // Check win conditions
+        function checkWinCondition() {
+            let blueKingExists = false;
+            let redKingExists = false;
+            let bluePieceCount = 0;
+            let redPieceCount = 0;
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = board[row][col];
+                    if (piece) {
+                        if (piece.team === 'blue') {
+                            bluePieceCount++;
+                            if (piece.pieceId === 'king') blueKingExists = true;
+                        } else if (piece.team === 'red') {
+                            redPieceCount++;
+                            if (piece.pieceId === 'king-r') redKingExists = true;
+                        }
+                    }
+                }
+            }
+
+            console.log('Win check - Blue pieces:', bluePieceCount, 'King exists:', blueKingExists);
+            console.log('Win check - Red pieces:', redPieceCount, 'King exists:', redKingExists);
+
+            // Blue wins if red king is gone or all red pieces are eliminated
+            if (!redKingExists || redPieceCount === 0) {
+                console.log('BLUE WINS!');
+                gameOver = true;
+                showVictory();
+                return true;
+            }
+
+            // Red wins if blue king is gone or all blue pieces are eliminated
+            if (!blueKingExists || bluePieceCount === 0) {
+                console.log('RED WINS!');
+                gameOver = true;
+                backgroundMusic.pause();
+
+                // Reveal a new rule when Micah loses
+                revealNewRule();
+
+                updateStatus("Red wins! Game over.");
+                return true;
+            }
+
+            console.log('Game continues - no winner yet');
+            return false;
+        }
+
+        // Attempt to move a piece
+        function attemptMove(fromRow, fromCol, toRow, toCol) {
+            const piece = board[fromRow][fromCol];
+            const target = board[toRow][toCol];
+
+            console.log(`Attempting move from (${fromRow},${fromCol}) to (${toRow},${toCol})`);
+            console.log('Piece:', piece);
+            console.log('Target:', target);
+
+            const moveValid = isValidMove(fromRow, fromCol, toRow, toCol);
+            console.log('Move valid?', moveValid);
+
+            if (moveValid) {
+                console.log('Move is valid! Executing...');
+
+                // Play sound effect based on whether it's a capture or just a move
+                if (target) {
+                    playSound('capture');
+                } else {
+                    playSound('move');
+                }
+
+                // Make the move
+                board[toRow][toCol] = piece;
+                board[fromRow][fromCol] = null;
+                selectedSquare = null;
+
+                // Check win conditions after the move
+                renderBoard();
+                if (checkWinCondition()) {
+                    return; // Game is over
+                }
+
+                // Switch turns
+                currentTurn = currentTurn === 'blue' ? 'red' : 'blue';
+                console.log('Turn switched to:', currentTurn);
+                updateTurnIndicator();
+
+                if (currentTurn === 'red') {
+                    // Computer's turn
+                    console.log('Calling AI in 500ms...');
+                    setTimeout(makeComputerMove, 500);
+                }
+            } else {
+                console.log('Move is INVALID');
+
+                // Check if this was a failed capture attempt (blocked by elixir rule)
+                if (target && target.team !== piece.team) {
+                    // Blocked trying to capture king with piece < 5 elixir
+                    if (target.elixir === 0 && piece.elixir < 5) {
+                        playSound('blocked');
+                    }
+                    // Blocked by regular elixir rule (same or lower)
+                    else if (piece.elixir !== 0 && target.elixir !== 0 && piece.elixir >= target.elixir) {
+                        playSound('blocked');
+                    } else {
+                        playSound('invalid');
+                    }
+                } else {
+                    playSound('invalid');
+                }
+
+                selectedSquare = null;
+                renderBoard();
+            }
+        }
+
+        // Custom movement rules based on Clash Royale card properties
+        function isValidMove(fromRow, fromCol, toRow, toCol) {
+            // Bounds check - move must be within the board
+            if (toRow < 0 || toRow >= 8 || toCol < 0 || toCol >= 8) {
+                return false;
+            }
+            if (fromRow < 0 || fromRow >= 8 || fromCol < 0 || fromCol >= 8) {
+                return false;
+            }
+
+            const piece = board[fromRow][fromCol];
+            if (!piece) {
+                return false; // No piece to move
+            }
+
+            const target = board[toRow][toCol];
+
+            // Can't capture own pieces
+            if (target && target.team === piece.team) {
+                return false;
+            }
+
+            // NEW RULE: Can only capture pieces with HIGHER elixir cost
+            // EXCEPTION 1: Kings (0 elixir) can capture anyone
+            // EXCEPTION 2: Only 5+ elixir pieces can capture Kings (0 elixir)
+            if (target) {
+                // If target is a king, only 5+ elixir pieces can capture it
+                if (target.elixir === 0 && piece.elixir < 5) {
+                    return false;
+                }
+                // Regular elixir rule: can't capture same or lower elixir (unless attacking piece is king)
+                if (piece.elixir !== 0 && target.elixir !== 0 && piece.elixir >= target.elixir) {
+                    return false;
+                }
+            }
+
+            // Buildings can't move
+            if (!piece.canMove) {
+                return false;
+            }
+
+            // Calculate distance
+            const rowDiff = Math.abs(toRow - fromRow);
+            const colDiff = Math.abs(toCol - fromCol);
+            const distance = Math.max(rowDiff, colDiff); // Chebyshev distance (king-move distance)
+            const linearDistance = Math.sqrt(rowDiff * rowDiff + colDiff * colDiff);
+
+            // Determine max movement range based on elixir cost
+            let maxMoveDistance;
+            if (piece.elixir === 0) { // Kings
+                maxMoveDistance = 1;
+            } else if (piece.elixir <= 3) {
+                maxMoveDistance = 3;
+            } else if (piece.elixir <= 6) {
+                maxMoveDistance = 2;
+            } else { // 7+ elixir
+                maxMoveDistance = 1;
+            }
+
+            // Check if move is within range
+            if (distance > maxMoveDistance) {
+                return false;
+            }
+
+            // For capturing, apply range rules
+            if (target) {
+                if (piece.range === 'melee') {
+                    // Melee units can only capture adjacent squares (distance 1)
+                    if (distance > 1) {
+                        return false;
+                    }
+                } else if (piece.range === 'ranged') {
+                    // Ranged units can capture up to 2 squares away
+                    if (distance > 2) {
+                        return false;
+                    }
+                }
+            }
+
+            // Flying units can jump over other pieces
+            if (piece.type === 'flying') {
+                return true; // No path checking needed
+            }
+
+            // Ground units need clear path (no jumping)
+            // Check if there are pieces in the way
+            if (!isPathClear(fromRow, fromCol, toRow, toCol)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // Check if path is clear for ground units
+        function isPathClear(fromRow, fromCol, toRow, toCol) {
+            const rowDiff = toRow - fromRow;
+            const colDiff = toCol - fromCol;
+            const steps = Math.max(Math.abs(rowDiff), Math.abs(colDiff));
+
+            // If moving to adjacent square, no need to check path
+            if (steps <= 1) {
+                return true;
+            }
+
+            const rowStep = rowDiff === 0 ? 0 : rowDiff / Math.abs(rowDiff);
+            const colStep = colDiff === 0 ? 0 : colDiff / Math.abs(colDiff);
+
+            // Check each square in the path (excluding start and end)
+            for (let i = 1; i < steps; i++) {
+                const checkRow = fromRow + (rowStep * i);
+                const checkCol = fromCol + (colStep * i);
+
+                // Bounds check to prevent accessing outside the board
+                if (checkRow < 0 || checkRow >= 8 || checkCol < 0 || checkCol >= 8) {
+                    return false; // Path goes outside board
+                }
+
+                if (board[checkRow][checkCol] !== null) {
+                    return false; // Path is blocked
+                }
+            }
+
+            return true;
+        }
+
+        // Smarter AI for computer moves
+        function makeComputerMove() {
+            console.log("AI turn starting...");
+
+            const redPieces = [];
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    if (board[row][col] && board[row][col].team === 'red') {
+                        redPieces.push({ row, col, piece: board[row][col] });
+                    }
+                }
+            }
+
+            console.log(`Found ${redPieces.length} red pieces`);
+
+            // If no red pieces left, blue wins (shouldn't happen but just in case)
+            if (redPieces.length === 0) {
+                gameOver = true;
+                showVictory();
+                return;
+            }
+
+            // Evaluate all possible moves and pick the best one
+            let bestMove = null;
+            let bestScore = -Infinity;
+            let movesEvaluated = 0;
+
+            for (const pieceData of redPieces) {
+                const fromRow = pieceData.row;
+                const fromCol = pieceData.col;
+                const piece = pieceData.piece;
+
+                // Try all possible destination squares
+                for (let toRow = 0; toRow < 8; toRow++) {
+                    for (let toCol = 0; toCol < 8; toCol++) {
+                        if (isValidMove(fromRow, fromCol, toRow, toCol)) {
+                            movesEvaluated++;
+                            const target = board[toRow][toCol];
+                            const score = evaluateMove(piece, fromRow, fromCol, toRow, toCol, target);
+
+                            if (score > bestScore) {
+                                bestScore = score;
+                                bestMove = { fromRow, fromCol, toRow, toCol, target, piece };
+                            }
+                        }
+                    }
+                }
+            }
+
+            console.log(`Evaluated ${movesEvaluated} possible moves, best score: ${bestScore}`);
+
+            // If we found a move, execute it
+            if (bestMove) {
+                const { fromRow, fromCol, toRow, toCol, target, piece } = bestMove;
+
+                console.log(`AI moving ${piece.pieceId} from (${fromRow},${fromCol}) to (${toRow},${toCol})`);
+
+                // Play sound effect
+                if (target) {
+                    playSound('capture');
+                } else {
+                    playSound('move');
+                }
+
+                board[toRow][toCol] = piece;
+                board[fromRow][fromCol] = null;
+
+                // Check win conditions
+                renderBoard();
+                if (checkWinCondition()) {
+                    return; // Game is over
+                }
+
+                currentTurn = 'blue';
+                updateTurnIndicator();
+            } else {
+                // If no valid move found, skip turn
+                console.log("AI found no valid moves, skipping turn");
+                currentTurn = 'blue';
+                updateTurnIndicator();
+            }
+        }
+
+        // Evaluate how good a move is for the AI
+        function evaluateMove(piece, fromRow, fromCol, toRow, toCol, target) {
+            let score = 0;
+
+            // PRIORITY 1: Capture the king (instant win!)
+            if (target && target.type === 'king') {
+                return 10000;
+            }
+
+            // PRIORITY 2: Capture enemy pieces (value based on their elixir cost)
+            if (target) {
+                score += 100 + (target.elixir * 20); // Higher elixir = more valuable
+
+                // Bonus for using cheap pieces to capture (they're our best attackers)
+                if (piece.elixir <= 2) {
+                    score += 30;
+                }
+            }
+
+            // PRIORITY 3: Move cheap pieces forward aggressively (they can capture more)
+            if (piece.elixir <= 2) {
+                const forwardProgress = (7 - toRow) - (7 - fromRow); // Moving toward blue (row 7)
+                score += forwardProgress * 15;
+            }
+
+            // PRIORITY 4: Advance toward enemy territory
+            if (!target) {
+                const currentDistance = 7 - fromRow;
+                const newDistance = 7 - toRow;
+                if (newDistance > currentDistance) {
+                    score += 10; // Reward moving forward
+                }
+            }
+
+            // PRIORITY 5: Protect the king - don't move far from it
+            const kingPos = findRedKing();
+            if (kingPos) {
+                const currentDistToKing = Math.abs(fromRow - kingPos.row) + Math.abs(fromCol - kingPos.col);
+                const newDistToKing = Math.abs(toRow - kingPos.row) + Math.abs(toCol - kingPos.col);
+
+                // Penalty for moving too far from king
+                if (newDistToKing > currentDistToKing + 2) {
+                    score -= 20;
+                }
+
+                // Bonus for pieces staying near king
+                if (piece.elixir >= 5 && newDistToKing <= 2) {
+                    score += 15; // Big pieces should protect king
+                }
+            }
+
+            // PRIORITY 6: Use ranged units effectively
+            if (piece.range === 'ranged' && target) {
+                score += 10; // Ranged units should attack
+            }
+
+            // PRIORITY 7: Move flying units over obstacles
+            if (piece.type === 'flying') {
+                score += 5; // Slight preference to use flying advantage
+            }
+
+            // Add small random factor to avoid predictability
+            score += Math.random() * 5;
+
+            return score;
+        }
+
+        // Helper function to find the red king
+        function findRedKing() {
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = board[row][col];
+                    if (piece && piece.pieceId === 'king-r') {
+                        return { row, col };
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Update status message
+        function updateStatus(message) {
+            document.getElementById('statusMessage').textContent = message;
+        }
+
+        // Update turn indicator
+        function updateTurnIndicator() {
+            const indicator = document.getElementById('turnIndicator');
+            indicator.textContent = currentTurn === 'blue' ? "Blue's Turn" : "Red's Turn";
+            indicator.style.color = currentTurn === 'blue' ? '#3b82f6' : '#ef4444';
+        }
+
+        // Show victory message
+        function showVictory() {
+            playSound('victory');
+            backgroundMusic.pause();
+            document.getElementById('successMessage').classList.add('show');
+            updateStatus("🎉 You win! 🎉");
+        }
+
+        // Reset the game
+        function resetGame() {
+            gameOver = false;
+            currentTurn = 'blue';
+            selectedSquare = null;
+            document.getElementById('successMessage').classList.remove('show');
+
+            // Reveal a new rule when restarting
+            revealNewRule();
+
+            initGame();
+        }
+
+        // Show hint
+        function showHint() {
+            // No hints - Micah must discover the rules himself!
+        }
+
+        // Initialize game on load
+        initGame();
+    </script>
+</body>
+</html>
