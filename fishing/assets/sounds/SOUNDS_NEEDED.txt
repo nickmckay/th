@@ -1,0 +1,46 @@
+SOUND EFFECTS NEEDED FOR FISHING GAME
+======================================
+
+Download these 3 sound effects and save them in this folder:
+
+1. cast.mp3
+   - When: Plays when bait is dropped into water
+   - Type: Splash, water plop, or fishing line cast sound
+   - Suggested search: "water splash", "fishing cast", "plop"
+
+2. catch_fish.mp3
+   - When: Plays when catching a fish (success!)
+   - Type: Success chime, happy sound, achievement bell
+   - Suggested search: "success chime", "achievement", "win sound", "ding"
+
+3. catch_trash.mp3
+   - When: Plays when catching trash (fail)
+   - Type: Bonk, fail sound, disappointed sound
+   - Suggested search: "fail sound", "bonk", "error sound", "buzzer"
+
+
+WHERE TO DOWNLOAD (All Free):
+======================================
+
+OPTION 1 - Pixabay (Easiest - No account needed)
+https://pixabay.com/sound-effects/search/fishing/
+- Search for "splash", "success", "fail"
+- Click download, choose MP3 format
+- Rename files to match names above
+
+OPTION 2 - Zapsplat (Best selection)
+https://www.zapsplat.com/sound-effect-category/fishing/
+- Free account required
+- Great quality sounds
+- Download as MP3
+
+OPTION 3 - BigSoundBank
+https://bigsoundbank.com/search?q=fishing
+- Simple downloads
+- Good variety
+
+
+TIPS:
+- Keep sounds short (1-2 seconds)
+- Make sure they're MP3 format
+- Test volume levels - adjust if needed
