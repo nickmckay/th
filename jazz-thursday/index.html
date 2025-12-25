@@ -68,6 +68,53 @@
             font-size: 20px;
         }
 
+        .timer-display {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            color: #fbbf24;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid #d97706;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .timer-item {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .timer-label {
+            font-size: 14px;
+            color: #fef3c7;
+            margin-bottom: 5px;
+        }
+
+        .timer-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #fbbf24;
+            font-family: 'Courier New', monospace;
+        }
+
+        .countdown-value {
+            color: #10b981;
+        }
+
+        .countdown-value.playing {
+            color: #ef4444;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
         .song-item {
             background: linear-gradient(135deg, #2d2665 0%, #1e1b4b 100%);
             padding: 15px;
@@ -244,7 +291,18 @@
         <h1>🎷 Name That Jazzy Christmas Tune 🎵</h1>
 
         <div class="instructions">
-            Guess all the songs! Each song you get correctly gives you an extra 0.5 seconds of listening time
+            Guess all the songs! Each song you get correctly gives you an extra 0.5 seconds of listening time. Plus, you earn bonus time for every 5 minutes of play!
+        </div>
+
+        <div class="timer-display">
+            <div class="timer-item">
+                <div class="timer-label">⏱️ Total Play Time</div>
+                <div class="timer-value" id="playTime">00:00</div>
+            </div>
+            <div class="timer-item">
+                <div class="timer-label">⏳ Countdown Timer</div>
+                <div class="timer-value countdown-value" id="countdown">--:--</div>
+            </div>
         </div>
 
         <div class="progress-info">
@@ -393,12 +451,79 @@
         let audioPlayers = {};
         let correctCount = 0;
         let maxPlayTime = 1; // Starts at 1 second
+        let sessionStartTime = Date.now();
+        let currentPlayingAudio = null;
+        let countdownInterval = null;
+        let songOrder = []; // Randomized order of songs
+
+        // Shuffle array using Fisher-Yates algorithm
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
 
         // Initialize the game
         function init() {
+            // Create randomized song order
+            songOrder = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
             createSongItems();
             updateScore();
             updateTimeDisplay();
+            startPlayTimeTracker();
+        }
+
+        // Start the play time tracker
+        function startPlayTimeTracker() {
+            // Update play time every second
+            setInterval(() => {
+                const elapsed = Date.now() - sessionStartTime;
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+
+                const playTimeDisplay = document.getElementById('playTime');
+                playTimeDisplay.textContent =
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                // Recalculate time bonus (might have crossed a 5-minute threshold)
+                const previousMaxTime = maxPlayTime;
+                checkAnswersRealtime();
+
+                // If max time changed due to time bonus, notify the user
+                if (maxPlayTime !== previousMaxTime) {
+                    updateTimeDisplay();
+                }
+            }, 1000);
+        }
+
+        // Calculate time bonus: 0.5 seconds per 5 minutes of play
+        function getTimeBonus() {
+            const elapsed = Date.now() - sessionStartTime;
+            const minutes = elapsed / 60000;
+            const fiveMinutePeriods = Math.floor(minutes / 5);
+            return fiveMinutePeriods * 0.5;
+        }
+
+        // Update countdown timer during audio playback
+        function updateCountdown(audio) {
+            const countdownDisplay = document.getElementById('countdown');
+
+            if (audio && !audio.paused) {
+                const remaining = maxPlayTime - audio.currentTime;
+                const minutes = Math.floor(remaining / 60);
+                const seconds = Math.floor(remaining % 60);
+                const milliseconds = Math.floor((remaining % 1) * 10);
+
+                countdownDisplay.textContent =
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${milliseconds}`;
+                countdownDisplay.classList.add('playing');
+            } else {
+                countdownDisplay.textContent = '--:--';
+                countdownDisplay.classList.remove('playing');
+            }
         }
 
         // Create all song items
@@ -406,37 +531,67 @@
             const container = document.getElementById('songsContainer');
             container.innerHTML = '';
 
-            for (let i = 1; i <= 12; i++) {
+            for (let displayPos = 0; displayPos < 12; displayPos++) {
+                const songNum = songOrder[displayPos]; // Actual song number (1-12)
+                const displayNum = displayPos + 1; // Display position (1-12)
+
                 const songDiv = document.createElement('div');
                 songDiv.className = 'song-item';
-                songDiv.id = `song-${i}`;
+                songDiv.id = `song-${songNum}`;
 
                 songDiv.innerHTML = `
                     <div class="song-header">
-                        <span class="song-number">Song #${i}</span>
-                        <span class="status-badge" id="status-${i}" style="display: none;"></span>
+                        <span class="song-number">Song #${displayNum}</span>
+                        <span class="status-badge" id="status-${songNum}" style="display: none;"></span>
                     </div>
-                    <audio id="audio-${i}" controls controlsList="nodownload" oncontextmenu="return false;">
-                        <source src="songs/song${i}.mp3" type="audio/mpeg">
+                    <audio id="audio-${songNum}" controls controlsList="nodownload" oncontextmenu="return false;">
+                        <source src="songs/song${songNum}.mp3" type="audio/mpeg">
                         Your browser does not support audio.
                     </audio>
                     <div class="input-container">
                         <input type="text"
-                               id="input-${i}"
+                               id="input-${songNum}"
                                placeholder="Type to search for song title..."
                                autocomplete="off"
-                               oninput="filterSongs(${i})"
-                               onfocus="showAutocomplete(${i})"
-                               onblur="setTimeout(() => hideAutocomplete(${i}), 200)">
-                        <div class="autocomplete-list" id="autocomplete-${i}"></div>
+                               oninput="filterSongs(${songNum})"
+                               onfocus="showAutocomplete(${songNum})"
+                               onblur="setTimeout(() => hideAutocomplete(${songNum}), 200)">
+                        <div class="autocomplete-list" id="autocomplete-${songNum}"></div>
                     </div>
                 `;
 
                 container.appendChild(songDiv);
 
                 // Setup audio player with time limit
-                const audio = document.getElementById(`audio-${i}`);
-                audioPlayers[i] = audio;
+                const audio = document.getElementById(`audio-${songNum}`);
+                audioPlayers[songNum] = audio;
+
+                audio.addEventListener('play', () => {
+                    // Pause other audio players
+                    for (let j = 1; j <= 12; j++) {
+                        if (j !== songNum && audioPlayers[j]) {
+                            audioPlayers[j].pause();
+                        }
+                    }
+                    currentPlayingAudio = audio;
+
+                    // Start countdown update interval
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    countdownInterval = setInterval(() => {
+                        updateCountdown(currentPlayingAudio);
+                    }, 100);
+                });
+
+                audio.addEventListener('pause', () => {
+                    if (currentPlayingAudio === audio) {
+                        currentPlayingAudio = null;
+                        updateCountdown(null);
+                        if (countdownInterval) {
+                            clearInterval(countdownInterval);
+                            countdownInterval = null;
+                        }
+                    }
+                });
 
                 audio.addEventListener('timeupdate', () => {
                     if (audio.currentTime >= maxPlayTime) {
@@ -447,6 +602,12 @@
 
                 audio.addEventListener('ended', () => {
                     audio.currentTime = 0;
+                    currentPlayingAudio = null;
+                    updateCountdown(null);
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
                 });
             }
         }
@@ -536,11 +697,15 @@
 
             correctCount = correct;
 
+            // Calculate time bonus from play time
+            const timeBonus = getTimeBonus();
+
+            // Calculate max play time: base (1s) + correct answers (0.5s each) + time bonus (0.5s per 5 min)
             // Special case: 11 correct = 45 seconds
             if (correctCount === 11) {
-                maxPlayTime = 45;
+                maxPlayTime = 45 + timeBonus;
             } else {
-                maxPlayTime = 1 + (correctCount * 0.5); // 0 correct = 1 sec, 1 correct = 1.5 sec, 2 correct = 2 sec, etc.
+                maxPlayTime = 1 + (correctCount * 0.5) + timeBonus;
             }
 
             updateScore();
@@ -561,7 +726,23 @@
         // Update time unlock display
         function updateTimeDisplay() {
             const timeDiv = document.getElementById('timeUnlock');
-            timeDiv.textContent = `🎵 Current Audio Length: ${maxPlayTime} second${maxPlayTime !== 1 ? 's' : ''}`;
+            const timeBonus = getTimeBonus();
+            const correctBonus = correctCount * 0.5;
+
+            let displayText = `🎵 Current Audio Length: ${maxPlayTime.toFixed(1)} seconds`;
+
+            if (timeBonus > 0 || correctBonus > 0) {
+                displayText += ` (Base: 1s`;
+                if (correctBonus > 0) {
+                    displayText += `, Correct: +${correctBonus.toFixed(1)}s`;
+                }
+                if (timeBonus > 0) {
+                    displayText += `, Time Bonus: +${timeBonus.toFixed(1)}s`;
+                }
+                displayText += `)`;
+            }
+
+            timeDiv.textContent = displayText;
         }
 
         // Initialize on load
